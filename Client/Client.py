@@ -273,11 +273,19 @@ def main():
 
             for e in pg.event.get():
                 et = e.type
+                print(e,"\n",et,"\n\n")
                 if et == pg.QUIT:
                     login = False
                     conecting = False
                     game = False
                     running = False
+
+                if et == pg.KEYDOWN:
+                    if e.key == pg.K_RIGHT:
+                        menu.moveUsers('R')
+                    if e.key == pg.K_LEFT:
+                        menu.moveUsers('L')
+                
                 if et == pg.MOUSEBUTTONDOWN:
                     action = menu.getClickedOnes(x,y)
                     print("tuki?",action)
@@ -338,7 +346,7 @@ def main():
                         TXTng = True
                     elif action == 2: #stop reading texxt
                         TXTng = False
-                    elif action in dice:
+                    elif action in dice: #throw a dice
                         num = randint(1,action)
                         print(num)
                         interface.throwDice("|"+str(action)+"#"+str(num),True)

@@ -30,6 +30,9 @@ class FieldTool:
         self.fontColor = fontColor
         self.selectable = selectable
     
+    def centerText(self):
+        self.textPos = (((self.size[0]/2)-len(self.text)*6)/2+self.pos[0],(self.size[1]/2)-27+self.pos[1])
+
     def render(self):
         self.ACTcolor = self.color
         if(self.selectable and getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)):
@@ -345,6 +348,8 @@ class Menu:
         self.selectedTXTField = ""
         self.selectedCombo = ""
         self.User = ""
+        self.UserLen = 0
+        self.UsersOffset = 0
         self.selectedCBox = False
         self.screenItems = []
 
@@ -380,6 +385,7 @@ class Menu:
         #Iter users
         directory = "chrctrs\\"
         cntnt = os.listdir(directory)
+        self.UserLen = len(cntnt)
         for f in range(0,len(cntnt)):
             if(os.path.isfile(directory+cntnt[f]) and cntnt[f].endswith(".CHRCTR")):
                 #poner perfiles
@@ -444,6 +450,28 @@ class Menu:
         nameText = self.font.render("Conecting",True,(255,255,255))
         self.W.blit(nameText,(570,333))
         
+    def moveUsers(self,direction):
+        offset = 0
+        change = True
+        if direction == 'L':
+            offset = 270
+            if self.UsersOffset < self.UserLen-1:
+                self.UsersOffset += 1
+            else: 
+                change = False
+        else:
+            offset = -270
+            if self.UsersOffset >= 0:
+                self.UsersOffset -= 1
+            else: 
+                change = False
+
+        if change:
+            for i in self.screenItems:
+                if(type(i) == BTN and not self.creatingChar):
+                    i.pos = (i.pos[0]+offset,i.pos[1])
+                    i.centerText()
+        print(self.UsersOffset)
                                
     def getClickedOnes(self,x,y):
         action = []
