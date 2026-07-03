@@ -273,7 +273,6 @@ def main():
 
             for e in pg.event.get():
                 et = e.type
-                print(e,"\n",et,"\n\n")
                 if et == pg.QUIT:
                     login = False
                     conecting = False

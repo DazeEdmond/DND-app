@@ -78,7 +78,10 @@ class Image(FieldTool):
     def __init__(self,window,pos,size,font,imagePath,color=(0,0,0),fontColor=(255,255,255),evt=-1):
         super().__init__(window,pos,size,font,color,fontColor,pos)
         self.path = imagePath
-        self.image = pg.image.load(self.path)#"Images\\sampleUser.png"
+        try:
+            self.image = pg.image.load(self.path)
+        except FileNotFoundError:
+            self.image = pg.image.load("Images\\sampleUser.png")
         self.image = pg.transform.scale(self.image,size)
         self.evt = evt
 
@@ -277,7 +280,10 @@ class UserBanner(FieldTool):
         super().__init__(window,pos,(110,110),font,color,fontColor,pos)
         self.secondFont = secondFont
         self.path = imagePath
-        self.image = pg.image.load(self.path)#"Images\\sampleUser.png"
+        try:
+            self.image = pg.image.load(self.path)
+        except FileNotFoundError:
+            self.image = pg.image.load("Images\\sampleUser.png")
         self.image = pg.transform.scale(self.image,(self.size[0]-20,self.size[1]-20))
         self.imagePos = (pos[0]+10,pos[1]+10)
         self.User = User
@@ -423,7 +429,11 @@ class Menu:
         return valid
     
     def loadLogin(self):
-        self.W.fill((75,0,125))
+        self.W.fill((0,0,0))
+
+        image = pg.image.load("Images/MainBackground.png")#"Images\\sampleUser.png"
+        image = pg.transform.scale(image,(1280,720))
+        self.W.blit(image,(0,0))
 
         #render other thngs
         if(self.creatingChar):

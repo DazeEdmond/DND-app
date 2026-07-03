@@ -55,7 +55,7 @@ def reciveAndSend(client,username):
                 #    sendFile(clients[username],clients[parts[0]])
                     #reciveFile(clients[username])
             else:
-                print(f"Message from tester: {message}")
+                print(f"Message for testing: {message}")
                 if "+" in parts[2]:
                     ms = parts[2].split("+")
                     if(int(ms[1]) == 1):
