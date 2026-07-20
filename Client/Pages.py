@@ -3,6 +3,7 @@ import Users as u
 import random
 import pickle as pkl
 import os
+import shutil
 from Utilities import BTN
 from Utilities import Dialog
 from Utilities import Image
@@ -135,15 +136,15 @@ class Menu:
     def moveUsers(self,direction):
         offset = 0
         change = True
-        if direction == 'L':
-            offset = 270
-            if self.UsersOffset < self.UserLen-1:
+        if direction == 'R':
+            offset = -270
+            if self.UsersOffset <= self.UserLen-1:
                 self.UsersOffset += 1
             else: 
                 change = False
         else:
-            offset = -270
-            if self.UsersOffset >= 0:
+            offset = 270
+            if self.UsersOffset > 0:
                 self.UsersOffset -= 1
             else: 
                 change = False
@@ -171,10 +172,13 @@ class Menu:
                             race = self.screenItems[1].getResult()
                             role = self.screenItems[2].getResult()
                             pp = self.screenItems[4].getResult()
+                            fname,ext = os.path.splitext(pp)
+                            npp = "chrctrImages/"+name+"PFP"+ext
+                            shutil.copy(pp,npp)
                             if(self.screenItems[6].getResult()=="ADV"):
-                                user = u.Adventurer(name,race,role,profPic=pp)
+                                user = u.Adventurer(name,race,role,profPic=npp)
                             else:
-                                user = u.DM(name,race,role,profPic=pp)
+                                user = u.DM(name,race,role,profPic=npp)
 
                             with open("chrctrs\\"+name+".CHRCTR","wb") as f:
                                 pkl.dump(user,f)
