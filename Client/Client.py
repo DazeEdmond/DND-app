@@ -220,13 +220,6 @@ def reciveFile():
 ####PYGAME###
 #############
 
-def getCollision(x,y,xs,ys,xc,yc,click=False):
-    if(click):
-        xc,yc = pg.mouse.get_pos()
-    if xc > x and xc < x+xs and yc > y and yc < y+ys:
-        return True
-    return False
-
 def loadWindow(window,display,size):
     """
     Charge the window scale, all the changes affect window
