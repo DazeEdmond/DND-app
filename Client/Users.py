@@ -64,3 +64,7 @@ class Adventurer:
 #############
 ######DM#####
 #############
+
+class DM(Adventurer):
+    def __init__(self,name,race,role,profPic="None"):
+        super().__init__(name,race,role,999,999,999,999,999,profPic)

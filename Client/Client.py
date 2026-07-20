@@ -7,6 +7,7 @@ import pygame as pg
 import pickle as pkl
 from Pages import Menu
 from Pages import Interface
+from Users import DM
 
 #############
 ####GLOBAL###
@@ -226,7 +227,6 @@ def getCollision(x,y,xs,ys,xc,yc,click=False):
         return True
     return False
 
-
 def loadWindow(window,display,size):
     """
     Charge the window scale, all the changes affect window
@@ -241,7 +241,7 @@ def main():
     """
     Start pygame and show the app interface
     """
-    
+
     pg.init()
     windowSize = (1280,720)
     window = pg.Surface(windowSize)
@@ -296,7 +296,7 @@ def main():
                         ME = menu.getSelectedUser()
                         interface.setUser(ME)
                         Username = ME.getName()
-                        print(Username)
+                        print(type(ME))
                         login = False
                         conecting = True
 
@@ -326,7 +326,11 @@ def main():
             loadWindow(window,display,windowSize)
             clock.tick(50)
 
-            
+        if(type(ME) == DM):
+            role = True
+            interface.setDMUI(True)
+            interface.setDMUIInterface()
+
         while game:
             x,y = pg.mouse.get_pos()
 

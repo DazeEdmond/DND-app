@@ -122,8 +122,8 @@ class FileDialog(FieldTool):
 #class BTN
 class BTN(FieldTool):
     def __init__(self,window,pos,size,font,action,text,color=(0,0,0),fontColor=(255,255,255)):
-        super().__init__(window,pos,size,font,color,fontColor,(((size[0]/2)-len(text)*6)/2+pos[0],
-                                                                            (size[1]/2)-27+pos[1]),
+        text_surface = font.render(text, True, fontColor)
+        super().__init__(window,pos,size,font,color,fontColor,(pos[0]+(size[0]-text_surface.get_width())//2,pos[1]+(size[1]-font.get_height())//2),
                                                                              True,text)
         self.action = action
 
@@ -135,11 +135,12 @@ class BTN(FieldTool):
         
 #class TextField():
 class TXTField(FieldTool):
-    def __init__(self,window,pos,size,font,color=(0,0,0),fontColor=(255,255,255)):
+    def __init__(self,window,pos,size,font,color=(0,0,0),fontColor=(255,255,255),AC="ABCDEFGHIJKLMNOPQRSTUVWXYZ ",canWrite=True):
         super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,(size[1]/2)-27+pos[1]),True)
         self.selected = False
         self.action = (1,2)
-        self.allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ "
+        self.allowedChars = AC
+        self.canWrite = canWrite
 
     def getResult(self):
         return self.text
@@ -158,21 +159,30 @@ class TXTField(FieldTool):
 
     def isClicked(self,x,y):
         flag = getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y)
+        if(not self.canWrite):
+            return -1
+
         if flag:
             self.selected = True
             return self.action[0]
-        elif not flag and self.selected: 
+        elif self.selected: 
             self.selected = False
             return self.action[1]
         return -1
 
     def write(self,key):
+        if(not self.canWrite):
+            return
+
         if key == '°':
             self.text = self.text[:-1]
         else:
-            if(key.upper() in self.allowedChars and len(self.text)<self.size[0]//20):
+            textSpace = self.font.render(self.text,True,self.fontColor)
+            if(key.upper() in self.allowedChars and textSpace.get_width()<self.size[0]-20):
                 self.text += key
 
+    def setPath(self,path):
+        self.text = path
 
 #class comboBox
 class ComboBox(FieldTool):
@@ -499,8 +509,11 @@ class Menu:
                             race = self.screenItems[1].getResult()
                             role = self.screenItems[2].getResult()
                             pp = self.screenItems[4].getResult()
-                            user = u.Adventurer(name,race,role,profPic=pp)
-                            
+                            if(self.screenItems[6].getResult()=="ADV"):
+                                user = u.Adventurer(name,race,role,profPic=pp)
+                            else:
+                                user = u.DM(name,race,role,profPic=pp)
+
                             with open("chrctrs\\"+name+".CHRCTR","wb") as f:
                                 pkl.dump(user,f)
 
@@ -566,6 +579,10 @@ class Interface:
         self.screenItems = []
         self.banner = ""
         self.banners = []
+        self.DMUI = False
+
+    def setDMUI(self,flag):
+        self.DMUI = flag
 
     def setUser(self,user):
         self.User = user
@@ -582,25 +599,63 @@ class Interface:
     
     def startGame(self):
         #DICE
-        self.screenItems.append(BTN(self.W,(895,430),(50,50),self.font,4,"  4",(204,204,35)))
-        self.screenItems.append(BTN(self.W,(955,430),(50,50),self.font,6,"  6",(204,204,35)))
-        self.screenItems.append(BTN(self.W,(1015,430),(50,50),self.font,8,"  8",(204,204,35)))
-        self.screenItems.append(BTN(self.W,(1075,430),(50,50),self.font,10,"  10",(204,204,35)))
-        self.screenItems.append(BTN(self.W,(1135,430),(50,50),self.font,12,"  12",(204,204,35)))
-        self.screenItems.append(BTN(self.W,(1195,430),(50,50),self.font,20,"  20",(204,204,35)))
+        self.screenItems.append(BTN(self.W,(895,430),(50,50),self.font,4,"4",(204,204,35)))
+        self.screenItems.append(BTN(self.W,(955,430),(50,50),self.font,6,"6",(204,204,35)))
+        self.screenItems.append(BTN(self.W,(1015,430),(50,50),self.font,8,"8",(204,204,35)))
+        self.screenItems.append(BTN(self.W,(1075,430),(50,50),self.font,10,"10",(204,204,35)))
+        self.screenItems.append(BTN(self.W,(1135,430),(50,50),self.font,12,"12",(204,204,35)))
+        self.screenItems.append(BTN(self.W,(1195,430),(50,50),self.font,20,"20",(204,204,35)))
         #Texting
-        self.screenItems.append(TXTField(self.W,(170,430),(600,50),self.font,(204,204,204),(0,0,0)))
+        self.screenItems.append(TXTField(self.W,(170,320),(600,50),self.font,(204,204,204),(0,0,0)))
         self.selectedTXTField = self.screenItems[6]
-        self.screenItems.append(ComboBox(self.W,(170,500),(200,50),self.font,(204,204,204),(0,0,0)))
+        self.screenItems.append(ComboBox(self.W,(170,380),(200,50),self.font,(204,204,204),(0,0,0)))
         self.screenItems[7].setItems(["ALL"])
         
+    def setDMUIInterface(self):
+        self.screenItems.clear()
+        self.screenItems.append(TXTField(self.W,(170,320),(600,50),self.font,(204,204,204),(0,0,0)))
+        self.selectedTXTField = self.screenItems[0]
+        self.screenItems.append(ComboBox(self.W,(170,380),(200,50),self.font,(204,204,204),(0,0,0)))
+        self.screenItems[1].setItems(["ALL"])
+        self.screenItems.append(Image(self.W,(170,470),(120,120),self.font,"Images\\sampleUser.png"))
+        self.screenItems.append(FileDialog(self.W,(170,600),(120,45),self.font,"Find a picture :p",
+                                           (("PNG","*.png"),("JPG","*.jpg"),("All Files","*.*")),"Profile",
+                                           self.screenItems[-1],(224,224,35)))
+        self.screenItems.append(TXTField(self.W,(405,465),(200,45),self.font,(204,204,204),(0,0,0)))
+        self.screenItems.append(TXTField(self.W,(405,510),(200,45),self.font,(204,204,204),(0,0,0),AC="1234567890"))
+        self.screenItems.append(TXTField(self.W,(405,555),(200,45),self.font,(204,204,204),(0,0,0),AC="1234567890"))
+        self.screenItems.append(TXTField(self.W,(405,600),(200,45),self.font,(204,204,204),(0,0,0),canWrite=False))
+        self.screenItems.append(FileDialog(self.W,(295,600),(115,45),self.font,"Find a theme",
+                                           (("All","*.*"),("mp3","*.mp3")),"Theme",
+                                           self.screenItems[-1],(224,224,35)))
+        self.screenItems.append(BTN(self.W,(615,465),(155,55),self.font,31,"Send",(50,207,81)))
+        self.screenItems.append(BTN(self.W,(615,527),(155,55),self.font,32,"Stop",(207,50,50)))
+        self.screenItems.append(BTN(self.W,(615,589),(155,55),self.font,33,"Clear",(170,170,170)))
+
+        self.screenItems.append(TXTField(self.W,(970,420),(300,45),self.font,(204,204,204),(0,0,0),canWrite=False))
+        self.screenItems.append(FileDialog(self.W,(870,420),(95,45),self.font,"Find Music",
+                                           (("All","*.*"),("mp3","*.mp3")),"Music",
+                                           self.screenItems[-1],(224,224,35)))
+        self.screenItems.append(BTN(self.W,(870,475),(400,40),self.font,41,"Play",(50,207,81)))
+        self.screenItems.append(BTN(self.W,(870,520),(400,40),self.font,42,"Stop",(207,50,50)))
+        self.screenItems.append(TXTField(self.W,(970,570),(300,45),self.font,(204,204,204),(0,0,0),canWrite=False))
+        self.screenItems.append(FileDialog(self.W,(870,570),(95,45),self.font,"Find Sound",
+                                           (("All","*.*"),("mp3","*.mp3")),"Sound",
+                                           self.screenItems[-1],(224,224,35)))
+        self.screenItems.append(BTN(self.W,(870,625),(400,40),self.font,43,"Play",(50,207,81)))
+        self.screenItems.append(BTN(self.W,(870,670),(400,40),self.font,44,"Clear",(170,170,170)))
 
     def write(self,key):
         self.selectedTXTField.write(key)
 
     def sendMessage(self):
+        UsersTXTBI = 7
+        if(self.DMUI):
+            UsersTXTBI = 1
+
         msg = self.selectedTXTField.getResult()
-        rcptr = self.screenItems[7].getResult()
+        rcptr = self.screenItems[UsersTXTBI].getResult()
+                
         me = self.User.getName()
         empty = self.selectedTXTField.isEmpty()
         self.selectedTXTField.clean()
@@ -610,15 +665,23 @@ class Interface:
         return rcptr+"|"+me+"|"+msg
 
     def connectUser(self,u):
+        UsersTXTBI = 7
+        if(self.DMUI):
+            UsersTXTBI = 1
+
         user = u.split("&")
         if user[0] != self.User.getName() and user[0] not in self.Users.keys():
-            self.screenItems[7].appendItem(user[0])
+            self.screenItems[UsersTXTBI].appendItem(user[0])
             return 1,user[0]
         return 0,""
 
     def disconnectUser(self,u):
+        UsersTXTBI = 7
+        if(self.DMUI):
+            UsersTXTBI = 1
+
         user = u.split("-")
-        self.screenItems[7].removeItem(user[0])
+        self.screenItems[UsersTXTBI].removeItem(user[0])
         del self.Users[user[0]]
         ub = ""
         for i in self.banners:
@@ -650,12 +713,12 @@ class Interface:
 
     def loadMSGS(self):
         lenin = len(self.msgs)-1
-        yPos = 360
+        yPos = 260
         for m in range(lenin,max(-1,lenin-6),-1):
             parts = self.msgs[m].split("|")
             Text = self.font.render(self.msgs[m],True,(0,0,0))
             if(parts[0] == "me"):
-                self.W.blit(Text,(770-len(self.msgs[m])*15-10,yPos))
+                self.W.blit(Text,(765-Text.get_width(),yPos))
             else:
                 self.W.blit(Text,(173,yPos))
             yPos-=50
@@ -666,22 +729,32 @@ class Interface:
         #Dice zone
         pg.draw.rect(self.W,(204,204,35),(870,10,400,400),border_radius=20)
         #TextArea
-        pg.draw.rect(self.W,(204,204,204),(170,110,600,300),border_radius=20)
+        pg.draw.rect(self.W,(204,204,204),(170,10,600,300),border_radius=20)
         
         for i in self.screenItems:
             i.render()
-
-        if self.diceCooldown > 0:
-            self.diceCooldown -= 1
 
         if(self.selectedCBox):
             self.selectedCombo.showItems()
 
         self.loadMSGS()
 
-        self.banner.render((15,15))
-        for i in range(0,len(self.banners)):
-            self.banners[i].render((15,i*120+135))
+        if(not self.DMUI):
+            if self.diceCooldown > 0:
+                self.diceCooldown -= 1
+
+            self.banner.render((15,15))
+            for i in range(0,len(self.banners)):
+                self.banners[i].render((15,i*120+135))
+        else:
+            battleText = self.font.render("Battle",True,(255,255,255))
+            self.W.blit(battleText,(170,430))
+            nameText = self.font.render("Name:",True,(255,255,255))
+            self.W.blit(nameText,(295,460))
+            hpText = self.font.render("HP:",True,(255,255,255))
+            self.W.blit(hpText,(295,505))
+            ATQText = self.font.render("ATQ:",True,(255,255,255))
+            self.W.blit(ATQText,(295,550))
 
     def getClickedOnes(self,x,y):
         action = []
@@ -720,4 +793,3 @@ class Interface:
             return 2
     
         return -1
-        
