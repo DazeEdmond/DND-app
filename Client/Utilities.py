@@ -27,7 +27,8 @@ class FieldTool:
         self.selectable = selectable
     
     def centerText(self):
-        self.textPos = (((self.size[0]/2)-len(self.text)*6)/2+self.pos[0],(self.size[1]/2)-27+self.pos[1])
+        text_surface = self.font.render(self.text, True, self.fontColor)
+        self.textPos = (self.pos[0]+(self.size[0]-text_surface.get_width())//2,self.pos[1]+(self.size[1]-self.font.get_height())//2)
 
     def render(self):
         self.ACTcolor = self.color
@@ -346,4 +347,57 @@ class UserBanner(FieldTool):
             self.path = path
             self.image = pg.image.load(self.path)
             self.image = pg.transform.scale(self.image,self.size)
-    
+
+class Enemy:
+    def __init__(self,window,pos,size,font,fontColor,name,HP,ATQ,pfp,Slist):
+        self.W = window
+        self.Slist = Slist
+        self.pos = pos
+        self.size = size
+        self.name = name
+        text_surface = font.render(name, True, fontColor)
+        self.namePos = (pos[0]+(size[0]-text_surface.get_width())//2,pos[1])
+        self.ATQ = ATQ
+        self.HPC = HP
+        self.HP = HP
+        self.HPBarSize = size[0]
+        self.HPColor = (50,207,81)
+        self.HPBackColor = (125,29,37)
+        self.HPPos = (pos[0],pos[1]+size[1]+60)
+        self.pfp = pfp
+        self.pfpPos = (pos[0],pos[1]+50)
+        self.deadCooldown = 50
+        self.deadFlag = False
+
+        try:
+            self.image = pg.image.load(self.path)
+        except FileNotFoundError:
+            self.image = pg.image.load("Images\\sampleUser.png")
+        self.image = pg.transform.scale(self.image,size)
+
+        self.font = font
+        self.fontColor = fontColor
+
+    def render(self):
+        nameText = self.font.render(self.name,True,self.fontColor)
+        self.W.blit(nameText,self.namePos)
+        
+        self.W.blit(self.image,self.pfpPos)
+
+        pg.draw.rect(self.W,self.HPBackColor,(self.HPPos[0],self.HPPos[1],self.size[0],40),border_radius=10)
+        pg.draw.rect(self.W,self.HPColor,(self.HPPos[0],self.HPPos[1],self.HPBarSize,40),border_radius=10)
+
+        if(self.deadFlag):
+            self.deadCooldown -= 1
+
+        if(self.deadCooldown <= 0):
+            self.Slist.remove(self)
+
+    def getAtq(self):
+        return self.ATQ + randint(0,self.ATQ)
+
+    def attack(self,dmg):
+        self.HP = max(self.HP - dmg,0)
+        if(HP == 0):
+            self.deadFlag = True
+        self.HPBarSize = size[0]*self.HP/self.HPC

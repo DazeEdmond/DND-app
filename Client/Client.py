@@ -89,6 +89,15 @@ def reciveMessages(interface):
                     interface.changeConected()
             elif '#' in parts[1]:
                 interface.throwDice(message)
+            elif '-' in parts[1]:
+                command = parts[1].split('-')
+                if(command[0] == "sound"):
+                    interface.playSound(command[1])
+                if(command[0] == "music"):
+                    print(command[1])
+                    interface.playMusic(command[1])
+                if(command[0] == "musicS"):
+                    interface.stopMusic()
             else:
                 interface.appendMSG(message)
             #if(message.split('|')[1] == "SeNDFiLe"):
@@ -236,6 +245,8 @@ def main():
     """
 
     pg.init()
+    pg.mixer.init()
+    pg.mixer.music.set_volume(0.5)
     windowSize = (1280,720)
     window = pg.Surface(windowSize)
     display = pg.display.set_mode(windowSize)
@@ -342,9 +353,20 @@ def main():
                         TXTng = True
                     elif action == 2: #stop reading texxt
                         TXTng = False
+                    elif action == 41:
+                        msg = interface.sendMusic()
+                        if(msg != ""):
+                            send(msg)
+                    elif action == 42:
+                        msg = interface.sendMusicStop()
+                        send(msg)
+                    elif action == 43:
+                        msg = interface.sendSound()
+                        if(msg != ""):
+                            send(msg)
+
                     elif action in dice: #throw a dice
                         num = randint(1,action)
-                        print(num)
                         interface.throwDice("|"+str(action)+"#"+str(num),True)
                         msg = "ALL|"+Username+"|"+str(action)+"#"+str(num)
                         send(msg)

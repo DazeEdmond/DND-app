@@ -43,7 +43,7 @@ def reciveAndSend(client,username):
         try:
             messageLen = struct.unpack("<H",clients[username].recv(2))[0]
             message = clients[username].recv(messageLen).decode("utf-8")
-            print(message)
+            print(message," ",messageLen)
             parts = message.split('|')
             #Aqui va logica de gestor de receptor
             if(parts[0] != "server" and parts[1] != "server"):
@@ -176,6 +176,5 @@ def reciveUsers():
                 print("Error sending: invaid username")
             print(f"{username} disconected")
             client.close()
-
 
 reciveUsers()

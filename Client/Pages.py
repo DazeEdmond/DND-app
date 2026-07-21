@@ -243,6 +243,7 @@ class Interface:
         self.Users = {}
         self.msgs = []
         self.screenItems = []
+        self.Enemy = ""
         self.banner = ""
         self.banners = []
         self.DMUI = False
@@ -329,6 +330,35 @@ class Interface:
             return ""
         self.msgs.append("me|"+msg)
         return rcptr+"|"+me+"|"+msg
+
+    #ALL|DM|Action-Value
+    def sendSound(self):
+        audio = self.screenItems[16].getResult()
+        if (audio != ""):
+            return "ALL|DM|sound-"+audio
+        else:
+            return ""
+
+    def sendMusic(self):
+        audio = self.screenItems[12].getResult()
+        if (audio != ""):
+            return "ALL|DM|music-"+audio
+        else:
+            return ""
+    def sendMusicStop(self):
+        return "ALL|DM|musicS-"
+
+    def playSound(self,sound):
+        Sound = pg.mixer.Sound(sound)
+        Sound.set_volume(0.5)
+        Sound.play()
+
+    def playMusic(self,music):
+        pg.mixer.music.load(music)
+        pg.mixer.music.play(-1)
+
+    def stopMusic(self):
+        pg.mixer.music.stop()
 
     def connectUser(self,u):
         UsersTXTBI = 7
@@ -459,6 +489,15 @@ class Interface:
             self.screenItems[6].setPath("")
             self.screenItems[7].setPath("")
         
+        if 41 in action:
+            return 41
+
+        if 42 in action:
+            return 42
+
+        if 43 in action:
+            return 43
+
         if 44 in action:
             self.screenItems[12].setPath("")
             self.screenItems[16].setPath("")
