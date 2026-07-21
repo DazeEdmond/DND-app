@@ -173,8 +173,11 @@ class Menu:
                             role = self.screenItems[2].getResult()
                             pp = self.screenItems[4].getResult()
                             fname,ext = os.path.splitext(pp)
-                            npp = "chrctrImages/"+name+"PFP"+ext
-                            shutil.copy(pp,npp)
+                            if(pp != "Images\\sampleUser.png"):
+                                npp = "chrctrImages/"+name+"PFP"+ext
+                                shutil.copy(pp,npp)
+                            else:
+                                npp = pp
                             if(self.screenItems[6].getResult()=="ADV"):
                                 user = u.Adventurer(name,race,role,profPic=npp)
                             else:
