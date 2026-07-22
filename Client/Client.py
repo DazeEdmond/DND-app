@@ -107,12 +107,19 @@ def reciveMessages(interface):
                     interface.spawnEnemy((920,5),(300,300),name,hp,atq,pfp,theme)
                 if(command[0] == "enemyS"):
                     interface.escapeEnemy()
+                if(command[0] == "enemyDMG"):
+                    interface.DMGEnemy(command[1])
+                if(command[0] == "enemyHeal"):
+                    interface.healEnemy(command[1])
                 if(command[0] == "charge"):
                     attributes = command[1].split('$')
                     interface.chargeUser(attributes)
                 if(command[0] == "change"):
                     attributes = command[1].split('$')
                     interface.changeUser(attributes)
+                if(command[0] == "turn"):
+                    if(command[1] == Username):
+                        interface.setTurn(True)
             else:
                 interface.appendMSG(message)
             #if(message.split('|')[1] == "SeNDFiLe"):
@@ -372,6 +379,10 @@ def main():
                         msg = interface.sendEnemy()
                     elif action == 32:
                         msg = interface.sendEnemyS()
+                    elif action == 34:
+                        msg = interface.sendEnemyAttack()
+                    elif action == 35:
+                        msg = interface.sendEnemyHeal()
                     elif action == 41:
                         msg = interface.sendMusic()
                     elif action == 42:
@@ -382,14 +393,20 @@ def main():
                         msg = interface.sendCharge()
                     elif action == 52:
                         msg = interface.sendChange()
+                    elif action == 62:
+                        msg = interface.sendTurn()
 
                     elif action in dice: #throw a dice
                         num = randint(1,action)
-                        interface.throwDice("|"+str(action)+"#"+str(num),True)
-                        msg = "ALL|"+Username+"|"+str(action)+"#"+str(num)
-                        
+                        if(interface.getMode()=="Attack" and interface.onBattle()):
+                            interface.throwDice("|"+str(action)+"#"+str(num)+"#Attack#"+str(ME.getATQ()),True)
+                            msg = "ALL|"+Username+"|"+str(action)+"#"+str(num)+"#Attack#"+str(ME.getATQ())
+                        elif(interface.getMode()=="Action"):
+                            interface.throwDice("|"+str(action)+"#"+str(num)+"#Action",True)
+                            msg = "ALL|"+Username+"|"+str(action)+"#"+str(num)+"#Action"
+
                     if(msg != ""):
-                            send(msg)
+                        send(msg)
 
                 if TXTng:
                     if et == pg.KEYDOWN:

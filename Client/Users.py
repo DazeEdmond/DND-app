@@ -8,11 +8,11 @@ class Adventurer:
         self.name = name
         self.race = race
         self.role = role
-        self.HP = hp
-        self.Mana = mana
-        self.Charisma = charisma
-        self.ATQ = atq
-        self.Money = money
+        self.HP = int(hp)
+        self.Mana = int(mana)
+        self.Charisma = int(charisma)
+        self.ATQ = int(atq)
+        self.Money = int(money)
         self.items = []
         self.profPic = profPic
 
@@ -67,4 +67,4 @@ class Adventurer:
 
 class DM(Adventurer):
     def __init__(self,name,race,role,profPic="None"):
-        super().__init__(name,race,role,999,999,999,999,999,profPic)
+        super().__init__(name,race,role,9999,9999,9999,9999,9999,profPic)

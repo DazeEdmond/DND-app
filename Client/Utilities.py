@@ -8,6 +8,15 @@ def getCollision(x,y,xs,ys,xc,yc,click=False):
         return True
     return False
 
+#Colors
+Green = (50,207,81)
+Red = (207,50,50)
+White = (204,204,204)
+Black = (0,0,0)
+LightGray = (170,170,170)
+Gray = (100,100,100)
+Yellow = (204,204,35)
+
 #############
 ####Field####
 #############
@@ -46,7 +55,7 @@ class FieldTool:
 
 #class Dialog
 class Dialog(FieldTool):
-    def __init__(self,window,pos,size,font,text,time,speed,Slist,color=(0,0,0),fontColor=(255,255,255)):
+    def __init__(self,window,pos,size,font,text,time,speed,Slist,color=Black,fontColor=(255,255,255)):
         super().__init__(window,pos,size,font,color,fontColor,(((size[0]/2)-len(text)*6)/2+pos[0],
                                                                             (size[1]/2)-27+pos[1]),
                                                                              True,text)
@@ -72,7 +81,7 @@ class Dialog(FieldTool):
 
 #class image
 class Image(FieldTool):
-    def __init__(self,window,pos,size,font,imagePath,color=(0,0,0),fontColor=(255,255,255),evt=-1):
+    def __init__(self,window,pos,size,font,imagePath,color=Black,fontColor=(255,255,255),evt=-1):
         super().__init__(window,pos,size,font,color,fontColor,pos)
         self.path = imagePath
         try:
@@ -101,7 +110,7 @@ class Image(FieldTool):
 
 #class FileDialog
 class FileDialog(FieldTool):
-    def __init__(self,window,pos,size,font,title,types,text,dest,color=(0,0,0),fontColor=(255,255,255)):
+    def __init__(self,window,pos,size,font,title,types,text,dest,color=Black,fontColor=(255,255,255)):
         super().__init__(window,pos,size,font,color,fontColor,(((size[0]/2)-len(text)*6)/2+pos[0],
                                                                             (size[1]/2)-27+pos[1]),
                                                                              True,text)
@@ -118,7 +127,7 @@ class FileDialog(FieldTool):
     
 #class BTN
 class BTN(FieldTool):
-    def __init__(self,window,pos,size,font,action,text,color=(0,0,0),fontColor=(255,255,255),enabled=True,disabledColor=(150,150,150)):
+    def __init__(self,window,pos,size,font,action,text,color=Black,fontColor=(255,255,255),enabled=True,disabledColor=(150,150,150)):
         text_surface = font.render(text, True, fontColor)
         super().__init__(window,pos,size,font,color,fontColor,(pos[0]+(size[0]-text_surface.get_width())//2,pos[1]+(size[1]-font.get_height())//2),
                                                                              True,text)
@@ -127,7 +136,7 @@ class BTN(FieldTool):
         self.disabledColor = disabledColor
 
     def render(self):
-        if(self.enable):
+        if(self.enabled):
             self.ACTcolor = self.color
             if(self.selectable and getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)):
                 self.ACTcolor = (min(self.color[0]+30,255),
@@ -149,11 +158,11 @@ class BTN(FieldTool):
         return -1
 
     def enable(self,state):
-        self.enable = state
+        self.enabled = state
         
 #class TextField():
 class TXTField(FieldTool):
-    def __init__(self,window,pos,size,font,color=(0,0,0),fontColor=(255,255,255),AC="ABCDEFGHIJKLMNOPQRSTUVWXYZ ",canWrite=True):
+    def __init__(self,window,pos,size,font,color=Black,fontColor=(255,255,255),AC="ABCDEFGHIJKLMNOPQRSTUVWXYZ ",canWrite=True):
         text_surface = font.render(" ", True, fontColor)
         super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,pos[1]+(size[1]-font.get_height())//2),True)
         self.selected = False
@@ -205,7 +214,7 @@ class TXTField(FieldTool):
 
 #class comboBox
 class ComboBox(FieldTool):
-    def __init__(self,window,pos,size,font,color=(0,0,0),fontColor=(255,255,255),action=3):
+    def __init__(self,window,pos,size,font,color=Black,fontColor=(255,255,255),action=3):
         super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,(size[1]/2)-27+pos[1]),True,"None")
         self.items = ["None"]
         self.selectedItem = 0
@@ -267,7 +276,7 @@ class ComboBox(FieldTool):
         
 #class Dice
 class Dice(FieldTool):
-    def __init__(self,window,pos,size,font,path,time,speed,Slist,color=(0,0,0),fontColor=(255,255,255),defnum=6):
+    def __init__(self,window,pos,size,font,path,time,speed,Slist,color=Black,fontColor=(255,255,255),defnum=6):
         super().__init__(window,pos,size,font,color,fontColor,(0,0),True)
         self.time = time
         self.number = defnum
@@ -305,7 +314,7 @@ class Dice(FieldTool):
 
 #class UserBanner
 class UserBanner(FieldTool):
-    def __init__(self,window,pos,font,secondFont,imagePath,color=(0,0,0),fontColor=(255,255,255),User="",showed=False):
+    def __init__(self,window,pos,font,secondFont,imagePath,color=Black,fontColor=(255,255,255),User="",showed=False):
         super().__init__(window,pos,(110,110),font,color,fontColor,pos)
         self.secondFont = secondFont
         self.path = imagePath
@@ -372,7 +381,7 @@ class UserBanner(FieldTool):
 
 #class DMUsersBanner
 class DMUserBanner(FieldTool):
-    def __init__(self,window,pos,font,secondFont,imagePath,color=(0,0,0),fontColor=(255,255,255),User="",showed=False):
+    def __init__(self,window,pos,font,secondFont,imagePath,color=Black,fontColor=(255,255,255),User="",showed=False):
         super().__init__(window,pos,(110,110),font,color,fontColor,pos)
         self.secondFont = secondFont
         self.path = imagePath
@@ -398,7 +407,8 @@ class DMUserBanner(FieldTool):
         self.FMoney = TXTField(window,(pos[0]+475,pos[1]+75),(70,35),secondFont,AC="-1234567890")
         self.FMoney.setPath(str(0))
         self.chargeBTN = BTN(window,(pos[0]+550,pos[1]+75),(70,35),secondFont,51,"Charge",color=(227,210,25))
-        self.changeUserBTN = BTN(window,(pos[0]+645,pos[1]+5),(70,100),secondFont,52,"Change",color=(50,207,81))
+        self.changeUserBTN = BTN(window,(pos[0]+645,pos[1]+5),(70,100),secondFont,52,"Change",color=Green)
+        self.turnBTN = BTN(window,(pos[0]+720,pos[1]+5),(70,100),secondFont,62,"Turn",color=Yellow)
         self.items = []
         self.items.append(self.FHP)
         self.items.append(self.FATQ)
@@ -407,11 +417,20 @@ class DMUserBanner(FieldTool):
         self.items.append(self.FMoney)
         self.items.append(self.chargeBTN)
         self.items.append(self.changeUserBTN)
+        if(self.User.getHP() != 9999):
+            self.items.append(self.turnBTN)
+            
 
         self.selectedTXTField = ""
 
     def getUsername(self):
         return self.username
+
+    def getResult(self):
+        return self.username+"$"+self.items[0].getResult()+"$"+self.items[1].getResult()+"$"+self.items[2].getResult()+"$"+self.items[3].getResult()
+
+    def getAmount(self):
+        return self.FMoney.getResult().replace("-","_")
 
     def updateUser(self):
         self.items[0].setPath(str(self.User.getHP()))
@@ -422,8 +441,8 @@ class DMUserBanner(FieldTool):
     def render(self,pos):
         self.pos = pos
         if (self.showed or getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)) or \
-           (self.showing and (getCollision(self.pos[0],self.pos[1],self.size[0]+610,self.size[1],0,0,True))):
-            pg.draw.rect(self.W,self.color,(self.pos[0],self.pos[1],self.size[0]+610,self.size[1]),border_radius=20)
+           (self.showing and (getCollision(self.pos[0],self.pos[1],self.size[0]+685,self.size[1],0,0,True))):
+            pg.draw.rect(self.W,self.color,(self.pos[0],self.pos[1],self.size[0]+685,self.size[1]),border_radius=20)
 
             Text = self.font.render(self.username,True,self.fontColor)
             self.W.blit(Text,(self.pos[0]+120,self.pos[1]+2))
@@ -479,6 +498,8 @@ class DMUserBanner(FieldTool):
                 return 51
             if 52 in actions:
                 return 52
+            if 62 in actions:
+                return 62
 
             elif 2 in actions:
                 return 2
@@ -490,12 +511,6 @@ class DMUserBanner(FieldTool):
             self.path = path
             self.image = pg.image.load(self.path)
             self.image = pg.transform.scale(self.image,self.size)
-
-    def getResult(self):
-        return self.username+"$"+self.items[0].getResult()+"$"+self.items[1].getResult()+"$"+self.items[2].getResult()+"$"+self.items[3].getResult()
-
-    def getAmount(self):
-        return self.FMoney.getResult().replace("-","_")
 
     def clean(self):
         self.FHP.clean()
@@ -520,7 +535,7 @@ class DMUserBanner(FieldTool):
 
 #class Enemy
 class Enemy:
-    def __init__(self,window,pos,size,font,fontColor,name,HP,ATQ,pfp,theme,Slist):
+    def __init__(self,window,pos,size,font,fontColor,name,HP,ATQ,pfp,theme,Slist,Me):
         self.W = window
         self.font = font
         self.fontColor = fontColor
@@ -530,18 +545,19 @@ class Enemy:
         self.name = name
         text_surface = font.render(name, True, fontColor)
         self.namePos = (pos[0]+(size[0]-text_surface.get_width())//2,pos[1])
-        self.ATQ = ATQ
-        self.HPC = HP
-        self.HP = HP
+        self.ATQ = int(ATQ)
+        self.HPC = int(HP)
+        self.HP = int(HP)
         self.HPBarSize = size[0]
-        self.HPColor = (50,207,81)
-        self.HPBackColor = (125,29,37)
+        self.HPColor = Green
+        self.HPBackColor = Red
         self.HPPos = (pos[0],pos[1]+size[1]+60)
         self.pfp = pfp
         self.pfpPos = (pos[0],pos[1]+50)
         self.deadCooldown = 50
         self.deadFlag = False
         self.theme = theme
+        self.Me = Me
 
         try:
             self.image = pg.image.load(pfp)
@@ -565,15 +581,22 @@ class Enemy:
             self.deadCooldown -= 1
 
         if(self.deadCooldown <= 0):
-            self.Slist.remove(self)
+            self.Me.clear()
 
     def getAtq(self):
-        return self.ATQ + randint(0,self.ATQ)
+        return randint(1,self.ATQ)
+    
+    def getHP(self):
+        return self.HP
 
     def attack(self,dmg):
         self.HP = max(self.HP - dmg,0)
-        if(HP == 0):
-            self.Slist.append(Dialog(self.W,(920,20),(300,50),self.font,"Enemy beated",
-                                                           50,0,self.screenItems,(100,100,100),(0,0,0)))
+        if(self.HP == 0):
+            self.Slist.append(Dialog(self.W,(920,100),(300,50),self.font,"Enemy beated",
+                                                           50,3,self.Slist,Gray,Black))
             self.deadFlag = True
-        self.HPBarSize = size[0]*self.HP/self.HPC
+        self.HPBarSize = self.size[0]*self.HP/self.HPC
+
+    def heal(self,heal):
+        self.HP = min(self.HP + heal,self.HPC)
+        self.HPBarSize = self.size[0]*self.HP/self.HPC

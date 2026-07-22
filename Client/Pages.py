@@ -4,16 +4,8 @@ import random
 import pickle as pkl
 import os
 import shutil
-from Utilities import BTN
-from Utilities import Dialog
-from Utilities import Image
-from Utilities import FileDialog
-from Utilities import TXTField
-from Utilities import ComboBox
-from Utilities import Dice
-from Utilities import UserBanner
-from Utilities import DMUserBanner
-from Utilities import Enemy
+from Utilities import BTN,Dialog,Image,FileDialog,TXTField,ComboBox,Dice,UserBanner,DMUserBanner,Enemy
+from Utilities import Green,Red,White,Black,LightGray,Gray,Yellow
 
 #####################################################################
 #///////////////////////////####MENU#####///////////////////////////#
@@ -61,7 +53,7 @@ class Menu:
         return self.User
         
     def startLogin(self):
-        self.screenItems.append(BTN(self.W,(515,325),(250,70),self.font,0,"Add Character",(204,204,35)))
+        self.screenItems.append(BTN(self.W,(515,325),(250,70),self.font,0,"Add Character",Yellow))
         #Iter users
         directory = "chrctrs\\"
         cntnt = os.listdir(directory)
@@ -71,25 +63,25 @@ class Menu:
                 #poner perfiles
                 with open(directory+cntnt[f],"rb") as u:
                     user = pkl.load(u)
-                    self.screenItems.append(BTN(self.W,(515+(f+1)*270,325),(250,70),self.font,f+4,user.getName(),(204,204,35)))
+                    self.screenItems.append(BTN(self.W,(515+(f+1)*270,325),(250,70),self.font,f+4,user.getName(),Yellow))
 
     def startAddChar(self):
-        self.screenItems.append(TXTField(self.W,(420,219),(400,50),self.font,(204,204,35),(0,0,0)))
-        self.screenItems.append(ComboBox(self.W,(420,319),(400,50),self.font,(204,204,35),(0,0,0)))
+        self.screenItems.append(TXTField(self.W,(420,219),(400,50),self.font,Yellow,Black))
+        self.screenItems.append(ComboBox(self.W,(420,319),(400,50),self.font,Yellow,Black))
         self.screenItems[1].setItems(["Humano","Elfo","Reptil","Celestial","Titan"])
-        self.screenItems.append(ComboBox(self.W,(420,419),(400,50),self.font,(204,204,35),(0,0,0)))
+        self.screenItems.append(ComboBox(self.W,(420,419),(400,50),self.font,Yellow,Black))
         self.screenItems[2].setItems(["Caballero","Explorador","Alquimista","Mago"])
         self.screenItems.append(BTN(self.W,(725,650),(150,50),self.font,0,"Create",(75,0,125)))
         self.screenItems.append(Image(self.W,(400,20),(150,150),self.font,"Images\\sampleUser.png"))
         self.screenItems.append(FileDialog(self.W,(600,120),(170,50),self.font,"Find a profile picture :p",
                                            (("PNG","*.png"),("JPG","*.jpg"),("All Files","*.*")),"Profile Pic",
                                            self.screenItems[-1],(75,0,125)))
-        self.screenItems.append(ComboBox(self.W,(780,20),(100,50),self.font,(204,204,35),(0,0,0)))
+        self.screenItems.append(ComboBox(self.W,(780,20),(100,50),self.font,Yellow,Black))
         self.screenItems[6].setItems(["ADV","DM"])
 
     def showError(self,txt):
         self.screenItems.append(Dialog(self.W,(self.WSize[0]//2-len(txt)*10-10,self.WSize[1]//2-50),(300,100),self.font,txt,
-                                                           25,1,self.screenItems,(100,100,100),(0,0,0)))
+                                                           25,1,self.screenItems,Gray,Black))
 
     def write(self,key):
         self.selectedTXTField.write(key)
@@ -103,7 +95,7 @@ class Menu:
         return valid
     
     def loadLogin(self):
-        self.W.fill((0,0,0))
+        self.W.fill(Black)
 
         image = pg.image.load("Images/MainBackground.png")#"Images\\sampleUser.png"
         image = pg.transform.scale(image,(1280,720))
@@ -111,7 +103,7 @@ class Menu:
 
         #render other thngs
         if(self.creatingChar):
-            pg.draw.rect(self.W,(204,204,35),(390,10,500,700))
+            pg.draw.rect(self.W,Yellow,(390,10,500,700))
 
             nameText = self.font.render("Name:",True,(255,255,255))
             self.W.blit(nameText,(420,170))
@@ -130,7 +122,7 @@ class Menu:
 
     def loadConection(self):
         self.W.fill((75,0,125))
-        pg.draw.rect(self.W,(204,204,35),(560,335,160,50))
+        pg.draw.rect(self.W,Yellow,(560,335,160,50))
         nameText = self.font.render("Conecting",True,(255,255,255))
         self.W.blit(nameText,(570,333))
         
@@ -191,7 +183,7 @@ class Menu:
                             return 2
                         else:
                             self.screenItems.append(Dialog(self.W,(self.WSize[0]//2-150,self.WSize[1]//2-50),(300,100),self.font,"Invalid Username",
-                                                           15,2,self.screenItems,(100,100,100),(0,0,0)))
+                                                           15,2,self.screenItems,Gray,Black))
                     else:
                         self.changeCreatingChar()
                         return -1
@@ -245,12 +237,14 @@ class Interface:
         self.Users = {}
         self.msgs = []
         self.screenItems = []
-        self.Enemy = ""
+        self.Enemy = []
         self.banner = ""
         self.banners = []
         self.selectedBanner = ""
         self.DMUI = False
         self.msgFieldSelected = False
+        self.Turn = False
+        self.mode = ""
 
     def setDMUI(self,flag):
         self.DMUI = flag
@@ -258,9 +252,9 @@ class Interface:
     def setUser(self,user):
         self.User = user
         if type(user) == u.DM:
-            self.banner = DMUserBanner(self.W,(15,15),self.font,self.Sfont,user.getProfPic(),(0,0,0),(255,255,255),user)
+            self.banner = DMUserBanner(self.W,(15,15),self.font,self.Sfont,user.getProfPic(),Black,(255,255,255),user)
         else:
-            self.banner = UserBanner(self.W,(15,15),self.font,self.Sfont,user.getProfPic(),(0,0,0),(255,255,255),user)
+            self.banner = UserBanner(self.W,(15,15),self.font,self.Sfont,user.getProfPic(),Black,(255,255,255),user)
 
 
     def changeConected(self):
@@ -275,53 +269,65 @@ class Interface:
     def getMsgFieldSelected(self):
         return self.msgFieldSelected
     
+    def getMode(self):
+        return self.mode
+
+    def onBattle(self):
+        return self.Enemy != []
+    
     def startGame(self):
         #DICE
-        self.screenItems.append(BTN(self.W,(895,430),(50,50),self.font,4,"4",(204,204,35)))
-        self.screenItems.append(BTN(self.W,(955,430),(50,50),self.font,6,"6",(204,204,35)))
-        self.screenItems.append(BTN(self.W,(1015,430),(50,50),self.font,8,"8",(204,204,35)))
-        self.screenItems.append(BTN(self.W,(1075,430),(50,50),self.font,10,"10",(204,204,35)))
-        self.screenItems.append(BTN(self.W,(1135,430),(50,50),self.font,12,"12",(204,204,35)))
-        self.screenItems.append(BTN(self.W,(1195,430),(50,50),self.font,20,"20",(204,204,35)))
+        self.screenItems.append(BTN(self.W,(895,430),(50,50),self.font,4,"4",Yellow,enabled=False))
+        self.screenItems.append(BTN(self.W,(955,430),(50,50),self.font,6,"6",Yellow,enabled=False))
+        self.screenItems.append(BTN(self.W,(1015,430),(50,50),self.font,8,"8",Yellow,enabled=False))
+        self.screenItems.append(BTN(self.W,(1075,430),(50,50),self.font,10,"10",Yellow,enabled=False))
+        self.screenItems.append(BTN(self.W,(1135,430),(50,50),self.font,12,"12",Yellow,enabled=False))
+        self.screenItems.append(BTN(self.W,(1195,430),(50,50),self.font,20,"20",Yellow,enabled=False))
         #Texting
-        self.screenItems.append(TXTField(self.W,(170,320),(600,50),self.font,(204,204,204),(0,0,0)))
+        self.screenItems.append(TXTField(self.W,(170,320),(600,50),self.font,White,Black))
         self.selectedTXTField = self.screenItems[6]
-        self.screenItems.append(ComboBox(self.W,(170,380),(200,50),self.font,(204,204,204),(0,0,0)))
+        self.screenItems.append(ComboBox(self.W,(170,380),(200,50),self.font,White,Black))
         self.screenItems[7].setItems(["ALL"])
+        self.screenItems.append(BTN(self.W,(870,500),(400,50),self.font,60,"Attack",Red,enabled=False))
+        self.screenItems.append(BTN(self.W,(870,560),(400,50),self.font,61,"Action",Yellow,enabled=False))
         
     def setDMUIInterface(self):
         self.screenItems.clear()
-        self.screenItems.append(TXTField(self.W,(170,320),(600,50),self.font,(204,204,204),(0,0,0)))
+        self.screenItems.append(TXTField(self.W,(170,320),(600,50),self.font,White,Black))
         self.selectedTXTField = self.screenItems[0]
-        self.screenItems.append(ComboBox(self.W,(170,380),(200,50),self.font,(204,204,204),(0,0,0)))
+        self.screenItems.append(ComboBox(self.W,(170,380),(200,50),self.font,White,Black))
         self.screenItems[1].setItems(["ALL"])
         self.screenItems.append(Image(self.W,(170,470),(120,120),self.font,"Images\\sampleUser.png"))#item 2
         self.screenItems.append(FileDialog(self.W,(170,600),(120,45),self.font,"Find a picture :p",
                                            (("PNG","*.png"),("JPG","*.jpg"),("All Files","*.*")),"Profile",
                                            self.screenItems[-1],(224,224,35)))#item3
-        self.screenItems.append(TXTField(self.W,(405,465),(200,45),self.font,(204,204,204),(0,0,0)))#item 4
-        self.screenItems.append(TXTField(self.W,(405,510),(200,45),self.font,(204,204,204),(0,0,0),AC="1234567890"))#item 5
-        self.screenItems.append(TXTField(self.W,(405,555),(200,45),self.font,(204,204,204),(0,0,0),AC="1234567890"))#item 6
-        self.screenItems.append(TXTField(self.W,(405,600),(200,45),self.font,(204,204,204),(0,0,0),canWrite=False))#item 7
+        self.screenItems.append(TXTField(self.W,(405,465),(200,45),self.font,White,Black))#item 4
+        self.screenItems.append(TXTField(self.W,(405,510),(200,45),self.font,White,Black,AC="1234567890"))#item 5
+        self.screenItems.append(TXTField(self.W,(405,555),(200,45),self.font,White,Black,AC="1234567890"))#item 6
+        self.screenItems.append(TXTField(self.W,(405,600),(200,45),self.font,White,Black,canWrite=False))#item 7
         self.screenItems.append(FileDialog(self.W,(295,600),(115,45),self.font,"Find a theme",
                                            (("All","*.*"),("mp3","*.mp3")),"Theme",
                                            self.screenItems[-1],(224,224,35)))#item 8
-        self.screenItems.append(BTN(self.W,(615,465),(155,55),self.font,31,"Send",(50,207,81)))#item 9
-        self.screenItems.append(BTN(self.W,(615,527),(155,55),self.font,32,"Stop",(207,50,50)))#item 10
-        self.screenItems.append(BTN(self.W,(615,589),(155,55),self.font,33,"Clear",(170,170,170)))#item 11
+        self.screenItems.append(BTN(self.W,(615,465),(155,55),self.font,31,"Send",Green))#item 9
+        self.screenItems.append(BTN(self.W,(615,527),(155,55),self.font,32,"Stop",Red))#item 10
+        self.screenItems.append(BTN(self.W,(615,589),(155,55),self.font,33,"Clear",LightGray))#item 11
 
-        self.screenItems.append(TXTField(self.W,(970,420),(300,45),self.font,(204,204,204),(0,0,0),canWrite=False))#item 12
+        self.screenItems.append(TXTField(self.W,(970,420),(300,45),self.font,White,Black,canWrite=False))#item 12
         self.screenItems.append(FileDialog(self.W,(870,420),(95,45),self.font,"Find Music",
                                            (("All","*.*"),("mp3","*.mp3")),"Music",
                                            self.screenItems[-1],(224,224,35)))#item 13
-        self.screenItems.append(BTN(self.W,(870,475),(400,40),self.font,41,"Play",(50,207,81)))#item 14
-        self.screenItems.append(BTN(self.W,(870,520),(400,40),self.font,42,"Stop",(207,50,50)))#item 15
-        self.screenItems.append(TXTField(self.W,(970,570),(300,45),self.font,(204,204,204),(0,0,0),canWrite=False))#item 16
+        self.screenItems.append(BTN(self.W,(870,475),(400,40),self.font,41,"Play",Green))#item 14
+        self.screenItems.append(BTN(self.W,(870,520),(400,40),self.font,42,"Stop",Red))#item 15
+        self.screenItems.append(TXTField(self.W,(970,570),(300,45),self.font,White,Black,canWrite=False))#item 16
         self.screenItems.append(FileDialog(self.W,(870,570),(95,45),self.font,"Find Sound",
                                            (("All","*.*"),("mp3","*.mp3")),"Sound",
                                            self.screenItems[-1],(224,224,35)))#item 17
-        self.screenItems.append(BTN(self.W,(870,625),(400,40),self.font,43,"Play",(50,207,81)))#item 18
-        self.screenItems.append(BTN(self.W,(870,670),(400,40),self.font,44,"Clear",(170,170,170)))#item 19
+        self.screenItems.append(BTN(self.W,(870,625),(400,40),self.font,43,"Play",Green))#item 18
+        self.screenItems.append(BTN(self.W,(870,670),(400,40),self.font,44,"Clear",LightGray))#item 19
+        self.screenItems.append(TXTField(self.W,(775,55),(90,45),self.font,White,Black,AC="1234567890"))#item 20
+        self.screenItems.append(BTN(self.W,(775,105),(90,40),self.font,34,"DMG",Green))#item 21
+        self.screenItems.append(TXTField(self.W,(775,180),(90,45),self.font,White,Black,AC="1234567890"))#item 22
+        self.screenItems.append(BTN(self.W,(775,230),(90,40),self.font,35,"Heal",Green))#item 23
 
     def write(self,key):
         self.selectedTXTField.write(key)
@@ -342,6 +348,32 @@ class Interface:
         self.msgs.append("me|"+msg)
         return rcptr+"|"+me+"|"+msg
 
+    def setTurn(self,flag):
+        self.Turn = flag
+        self.enableDices(False)
+        self.screenItems[8].enable(flag)
+        self.screenItems[9].enable(flag)
+        self.mode = ""
+
+    def enableDices(self,flag):
+        self.screenItems[0].enable(flag)
+        self.screenItems[1].enable(flag)
+        self.screenItems[2].enable(flag)
+        self.screenItems[3].enable(flag)
+        self.screenItems[4].enable(flag)
+        self.screenItems[5].enable(flag)
+
+    def enableAttackDice(self):
+        role = self.User.getRole()
+        self.enableDices(False)
+        if(role == "Caballero"):
+            self.screenItems[5].enable(True)
+        if(role == "Explorador"):
+            self.screenItems[2].enable(True)
+        if(role == "Alquimista"):
+            self.screenItems[3].enable(True)
+        if(role == "Mago"):
+            self.screenItems[4].enable(True)
     #ALL|DM|Action-Value
     def sendSound(self):
         audio = self.screenItems[16].getResult()
@@ -359,14 +391,6 @@ class Interface:
     def sendMusicStop(self):
         return "ALL|DM|musicS-"
 
-    def sendEnemy(self):
-        name = self.screenItems[4].getResult()
-        hp = self.screenItems[5].getResult()
-        atq = self.screenItems[6].getResult()
-        pfp = self.screenItems[2].getResult()
-        theme = self.screenItems[7].getResult()
-        return "ALL|DM|enemy-"+name+"$"+hp+"$"+atq+"$"+pfp+"$"+theme
-
     def sendCharge(self):
         if self.selectedBanner == "":
             return
@@ -377,8 +401,27 @@ class Interface:
             return
         return "ALL|DM|change-"+self.selectedBanner.getResult()
 
+    def sendTurn(self):
+        if self.selectedBanner == "":
+            return
+        return "ALL|DM|turn-"+self.selectedBanner.getUsername()
+
+    def sendEnemy(self):
+        name = self.screenItems[4].getResult()
+        hp = self.screenItems[5].getResult()
+        atq = self.screenItems[6].getResult()
+        pfp = self.screenItems[2].getResult()
+        theme = self.screenItems[7].getResult()
+        return "ALL|DM|enemy-"+name+"$"+hp+"$"+atq+"$"+pfp+"$"+theme
+
     def sendEnemyS(self):
         return "ALL|DM|enemyS-"
+
+    def sendEnemyAttack(self):
+        return "ALL|DM|enemyDMG-"+self.screenItems[20].getResult()
+
+    def sendEnemyHeal(self):
+        return "ALL|DM|enemyHeal-"+self.screenItems[22].getResult()
 
     def chargeUser(self,charge):
         num = 0
@@ -415,14 +458,28 @@ class Interface:
                         i.updateUser()
 
     def spawnEnemy(self,pos,size,name,HP,ATQ,pfp,theme):
-        self.Enemy = Enemy(self.W,pos,size,self.font,(240,240,240),name,HP,ATQ,pfp,theme,self.screenItems)
+        self.Enemy.append(Enemy(self.W,pos,size,self.font,(240,240,240),name,HP,ATQ,pfp,theme,self.screenItems,self.Enemy))
         self.playMusic(theme)
 
     def escapeEnemy(self):
-        self.screenItems.append(Dialog(self.W,(920,20),(300,50),self.font,"Enemy escaped",
-                                                           50,0,self.screenItems,(100,100,100),(0,0,0)))
-        self.Enemy = ""
+        self.screenItems.append(Dialog(self.W,(920,50),(300,50),self.font,"Enemy escaped",
+                                                           50,2,self.screenItems,Gray,Black))
+        self.Enemy.clear()
         self.stopMusic()
+
+    def DMGEnemy(self,dmg):
+        if(self.Enemy == []):
+            return
+        self.Enemy[0].attack(int(dmg))
+        self.screenItems.append(Dialog(self.W,(920,50),(300,50),self.font,"Damage -"+dmg,
+                                                           50,3,self.screenItems,Red,Black))
+        if(self.Enemy[0].getHP() <= 0):
+            self.stopMusic()
+
+    def healEnemy(self,heal):
+        self.Enemy[0].heal(int(heal))
+        self.screenItems.append(Dialog(self.W,(920,50),(300,50),self.font,"Heal +"+heal,
+                                                           50,3,self.screenItems,Green,Black))
 
     def playSound(self,sound):
         Sound = pg.mixer.Sound(sound)
@@ -484,27 +541,32 @@ class Interface:
         self.Users[Adv[0]] = nADV
 
         if type(self.User) == u.DM:
-            self.banners.append(DMUserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),(0,0,0),nADV))
+            self.banners.append(DMUserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),Black,nADV))
         else:
-            self.banners.append(UserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),(0,0,0),nADV))
+            self.banners.append(UserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),Black,nADV))
 
     def throwDice(self,message,flag=False):
+        print(message)
         self.diceCooldown = 50
         parts = message.split('|')
         dice = parts[1].split('#')
         num = int(dice[1])
         rang = int(dice[0])
+        if(dice[2] == "Attack"):
+            self.DMGEnemy(num+int(dice[3]))
         if not flag:
             self.screenItems.append(Dialog(self.W,(920,15),(300,50),self.font,parts[0],
-                                                           50,0,self.screenItems,(100,100,100),(0,0,0)))
-        self.screenItems.append(Dice(self.W,(1030,150),(80,80),self.font,"Images\\Dice.jpg",20,1,self.screenItems,(100,100,100),(255,44,0),num))
+                                                           50,0,self.screenItems,Gray,Black))
+        self.screenItems.append(Dice(self.W,(1030,150),(80,80),self.font,"Images\\Dice.jpg",20,1,self.screenItems,Gray,(255,44,0),num))
+        if(not self.DMUI):
+            self.setTurn(False)
 
     def loadMSGS(self):
         lenin = len(self.msgs)-1
         yPos = 260
         for m in range(lenin,max(-1,lenin-6),-1):
             parts = self.msgs[m].split("|")
-            Text = self.font.render(self.msgs[m],True,(0,0,0))
+            Text = self.font.render(self.msgs[m],True,Black)
             if(parts[0] == "me"):
                 self.W.blit(Text,(765-Text.get_width(),yPos))
             else:
@@ -515,12 +577,12 @@ class Interface:
         self.W.fill((75,0,125))
 
         #Dice zone
-        pg.draw.rect(self.W,(204,204,35),(870,10,400,400),border_radius=20)
+        pg.draw.rect(self.W,Yellow,(870,10,400,400),border_radius=20)
         #TextArea
-        pg.draw.rect(self.W,(204,204,204),(170,10,600,300),border_radius=20)
+        pg.draw.rect(self.W,White,(170,10,600,300),border_radius=20)
         
-        if(self.Enemy != ""):
-            self.Enemy.render()
+        if(self.Enemy != []):
+            self.Enemy[0].render()
 
         for i in self.screenItems:
             i.render()
@@ -540,6 +602,10 @@ class Interface:
             self.W.blit(hpText,(295,505))
             ATQText = self.font.render("ATQ:",True,(255,255,255))
             self.W.blit(ATQText,(295,550))
+            DMGText = self.font.render("DMG",True,(255,255,255))
+            self.W.blit(DMGText,(780,10))
+            HealText = self.font.render("Heal",True,(255,255,255))
+            self.W.blit(HealText,(785,140))
 
         if(self.selectedCBox):
             self.selectedCombo.showItems()
@@ -595,10 +661,10 @@ class Interface:
             self.selectedCBox = True
 
         if 31 in action:
-            if (self.verifyEnemyFields() and self.Enemy == ""):
+            if (self.verifyEnemyFields() and self.Enemy == []):
                 return 31
 
-        if 32 in action and self.Enemy != "":
+        if 32 in action and self.Enemy != []:
             return 32
             
         if 33 in action:
@@ -607,6 +673,12 @@ class Interface:
             self.screenItems[5].setPath("")
             self.screenItems[6].setPath("")
             self.screenItems[7].setPath("")
+
+        if 34 in action and self.screenItems[20].getResult() != "" and self.Enemy != []:
+            return 34
+        
+        if 35 in action and self.screenItems[22].getResult() != "" and self.Enemy != []:
+            return 35
         
         if 41 in action:
             return 41
@@ -626,6 +698,17 @@ class Interface:
         
         if 52 in action:
             return 52
+
+        if 60 in action:
+            self.mode = "Attack"
+            self.enableAttackDice()
+
+        if 61 in action:
+            self.mode = "Action"
+            self.enableDices(True)
+        
+        if 62 in action:
+            return 62
 
         if 1 in action:
             return 1
