@@ -441,17 +441,21 @@ class Interface:
     def changeUser(self,change):
         if(self.User.getName() == change[0]):
             self.User.setHP(int(change[1]))
-            self.User.setATQ(int(change[2]))
-            self.User.setMana(int(change[3]))
-            self.User.setCharisma(int(change[4]))
+            self.User.setTotalHP(int(change[2]))
+            self.User.setATQ(int(change[3]))
+            self.User.setMana(int(change[4]))
+            self.User.setCharisma(int(change[5]))
             with open("chrctrs\\"+change[0]+".CHRCTR","wb") as f:
                 pkl.dump(self.User,f)
+            if(self.DMUI):
+                self.banner.updateUser()
         else:
             user = self.Users[change[0]]
             user.setHP(int(change[1]))
-            user.setATQ(int(change[2]))
-            user.setMana(int(change[3]))
-            user.setCharisma(int(change[4]))
+            user.setTotalHP(int(change[2]))
+            user.setATQ(int(change[3]))
+            user.setMana(int(change[4]))
+            user.setCharisma(int(change[5]))
             if(self.DMUI):
                 for i in self.banners:
                     if(i.getUsername() == change[0]):

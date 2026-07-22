@@ -22,7 +22,6 @@ Port = 5000
 Username = ""
 Client = ""
 
-
 ####
 ########
 ###########
@@ -128,11 +127,13 @@ def reciveMessages(interface):
 
         except ConnectionAbortedError:
             print("disconected")
+            interface.changeConected()
             Client.close()
             break
         except Exception as e:
             print(e)
             print("\nDisconected from server in recive Message")
+            interface.changeConected()
             Client.close()
             break
 '''
@@ -195,6 +196,7 @@ def sendFile(Filename):
         
     except Exception as e:
         print(e)
+        print("\nDisconected from server in send File")
 
 #############
 ####FILE#####
@@ -243,9 +245,6 @@ def reciveFile():
     except Exception as e:
         print("Exception in recive File: ")
         print(e)
-
-        
-#startConection()
 
 #############
 ####PYGAME###
@@ -420,7 +419,8 @@ def main():
                             interface.write(e.unicode)
             
             interface.loadGame()
-            if not interface.getConected:
+            
+            if not interface.getConected():
                 login = True
                 conecting = False
                 game = False

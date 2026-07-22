@@ -350,7 +350,7 @@ class UserBanner(FieldTool):
             Text = self.secondFont.render("Role: "+self.User.getRole(),True,self.fontColor)
             self.W.blit(Text,(self.pos[0]+120,self.pos[1]+65))
 
-            Text = self.secondFont.render("HP: "+str(self.User.getHP()),True,self.fontColor)
+            Text = self.secondFont.render("HP: "+str(self.User.getHP())+"/"+str(self.User.getTotalHP()),True,self.fontColor)
             self.W.blit(Text,(self.pos[0]+340,self.pos[1]+15))
 
             Text = self.secondFont.render("ATQ: "+str(self.User.getATQ()),True,self.fontColor)
@@ -396,8 +396,10 @@ class DMUserBanner(FieldTool):
         self.showed = showed
         self.showing = False
         #Fields
-        self.FHP = TXTField(window,(pos[0]+400,pos[1]+5),(70,35),secondFont,AC="1234567890")
+        self.FHP = TXTField(window,(pos[0]+320,pos[1]+5),(70,35),secondFont,AC="1234567890")
         self.FHP.setPath(str(User.getHP()))
+        self.FTHP = TXTField(window,(pos[0]+400,pos[1]+5),(70,35),secondFont,AC="1234567890")
+        self.FTHP.setPath(str(User.getTotalHP()))
         self.FATQ = TXTField(window,(pos[0]+400,pos[1]+40),(70,35),secondFont,AC="1234567890")
         self.FATQ.setPath(str(User.getATQ()))
         self.FMana = TXTField(window,(pos[0]+400,pos[1]+75),(70,35),secondFont,AC="1234567890")
@@ -411,6 +413,7 @@ class DMUserBanner(FieldTool):
         self.turnBTN = BTN(window,(pos[0]+720,pos[1]+5),(70,100),secondFont,62,"Turn",color=Yellow)
         self.items = []
         self.items.append(self.FHP)
+        self.items.append(self.FTHP)
         self.items.append(self.FATQ)
         self.items.append(self.FMana)
         self.items.append(self.FCharisma)
@@ -427,16 +430,17 @@ class DMUserBanner(FieldTool):
         return self.username
 
     def getResult(self):
-        return self.username+"$"+self.items[0].getResult()+"$"+self.items[1].getResult()+"$"+self.items[2].getResult()+"$"+self.items[3].getResult()
+        return self.username+"$"+self.items[0].getResult()+"$"+self.items[1].getResult()+"$"+self.items[2].getResult()+"$"+self.items[3].getResult()+"$"+self.items[4].getResult()
 
     def getAmount(self):
         return self.FMoney.getResult().replace("-","_")
 
     def updateUser(self):
         self.items[0].setPath(str(self.User.getHP()))
-        self.items[1].setPath(str(self.User.getATQ()))
-        self.items[2].setPath(str(self.User.getMana()))
-        self.items[3].setPath(str(self.User.getCharisma()))
+        self.items[1].setPath(str(self.User.getTotalHP()))
+        self.items[2].setPath(str(self.User.getATQ()))
+        self.items[3].setPath(str(self.User.getMana()))
+        self.items[4].setPath(str(self.User.getCharisma()))
 
     def render(self,pos):
         self.pos = pos
@@ -453,8 +457,8 @@ class DMUserBanner(FieldTool):
             Text = self.secondFont.render("Role: "+self.User.getRole(),True,self.fontColor)
             self.W.blit(Text,(self.pos[0]+120,self.pos[1]+65))
 
-            Text = self.secondFont.render("HP: ",True,self.fontColor)
-            self.W.blit(Text,(self.pos[0]+340,self.pos[1]+5))
+            Text = self.secondFont.render("HP:                     /",True,self.fontColor)
+            self.W.blit(Text,(self.pos[0]+275,self.pos[1]+5))
 
             Text = self.secondFont.render("ATQ: ",True,self.fontColor)
             self.W.blit(Text,(self.pos[0]+340,self.pos[1]+40))
@@ -514,6 +518,7 @@ class DMUserBanner(FieldTool):
 
     def clean(self):
         self.FHP.clean()
+        self.FTHP.clean()
         self.FATQ.clean()
         self.FMana.clean()
         self.FCharisma.clean()

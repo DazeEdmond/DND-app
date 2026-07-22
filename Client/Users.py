@@ -9,6 +9,7 @@ class Adventurer:
         self.race = race
         self.role = role
         self.HP = int(hp)
+        self.totalHP = int(hp)
         self.Mana = int(mana)
         self.Charisma = int(charisma)
         self.ATQ = int(atq)
@@ -28,6 +29,8 @@ class Adventurer:
         return self.role
     def getHP(self):
         return self.HP
+    def getTotalHP(self):
+        return self.totalHP
     def getMana(self):
         return self.Mana
     def getCharisma(self):
@@ -47,7 +50,9 @@ class Adventurer:
     #############
 
     def setHP(self,value):
-        self.HP = value
+        self.HP = min(int(value),int(self.totalHP))
+    def setTotalHP(self,value):
+        self.totalHP = value
     def setMana(self,value):
         self.Mana = value
     def setCharisma(self,value):
