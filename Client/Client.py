@@ -27,7 +27,6 @@ Client = ""
 ########
 ###########
 
-
 #############
 ##CONECTION##
 #############
@@ -98,6 +97,22 @@ def reciveMessages(interface):
                     interface.playMusic(command[1])
                 if(command[0] == "musicS"):
                     interface.stopMusic()
+                if(command[0] == "enemy"):
+                    attributes = command[1].split('$')
+                    name = attributes[0]
+                    hp = attributes[1]
+                    atq = attributes[2]
+                    pfp = attributes[3]
+                    theme = attributes[4]
+                    interface.spawnEnemy((920,5),(300,300),name,hp,atq,pfp,theme)
+                if(command[0] == "enemyS"):
+                    interface.escapeEnemy()
+                if(command[0] == "charge"):
+                    attributes = command[1].split('$')
+                    interface.chargeUser(attributes)
+                if(command[0] == "change"):
+                    attributes = command[1].split('$')
+                    interface.changeUser(attributes)
             else:
                 interface.appendMSG(message)
             #if(message.split('|')[1] == "SeNDFiLe"):
@@ -300,7 +315,6 @@ def main():
                         ME = menu.getSelectedUser()
                         interface.setUser(ME)
                         Username = ME.getName()
-                        print(type(ME))
                         login = False
                         conecting = True
 
@@ -349,35 +363,40 @@ def main():
                 if et == pg.MOUSEBUTTONDOWN:
                     action = interface.getClickedOnes(x,y)
                     print("tuki?",action)
+                    msg = ""
                     if action == 1: #start reading text
                         TXTng = True
                     elif action == 2: #stop reading texxt
                         TXTng = False
+                    elif action == 31:
+                        msg = interface.sendEnemy()
+                    elif action == 32:
+                        msg = interface.sendEnemyS()
                     elif action == 41:
                         msg = interface.sendMusic()
-                        if(msg != ""):
-                            send(msg)
                     elif action == 42:
                         msg = interface.sendMusicStop()
-                        send(msg)
                     elif action == 43:
                         msg = interface.sendSound()
-                        if(msg != ""):
-                            send(msg)
+                    elif action == 51:
+                        msg = interface.sendCharge()
+                    elif action == 52:
+                        msg = interface.sendChange()
 
                     elif action in dice: #throw a dice
                         num = randint(1,action)
                         interface.throwDice("|"+str(action)+"#"+str(num),True)
                         msg = "ALL|"+Username+"|"+str(action)+"#"+str(num)
-                        send(msg)
+                        
+                    if(msg != ""):
+                            send(msg)
 
                 if TXTng:
                     if et == pg.KEYDOWN:
                         if e.key == pg.K_BACKSPACE:
                             interface.write("°")
-                        elif e.key == pg.K_RETURN:
+                        elif e.key == pg.K_RETURN and interface.getMsgFieldSelected():
                             msg = interface.sendMessage()
-                            print(msg)
                             if msg != "":
                                 send(msg)
                         else:

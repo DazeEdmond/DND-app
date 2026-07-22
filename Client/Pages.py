@@ -12,7 +12,8 @@ from Utilities import TXTField
 from Utilities import ComboBox
 from Utilities import Dice
 from Utilities import UserBanner
-from Utilities import UserBanner
+from Utilities import DMUserBanner
+from Utilities import Enemy
 
 #####################################################################
 #///////////////////////////####MENU#####///////////////////////////#
@@ -154,7 +155,6 @@ class Menu:
                 if(type(i) == BTN and not self.creatingChar):
                     i.pos = (i.pos[0]+offset,i.pos[1])
                     i.centerText()
-        print(self.UsersOffset)
                                
     def getClickedOnes(self,x,y):
         action = []
@@ -208,7 +208,6 @@ class Menu:
                     else:
                         goToInterface = True
                         self.User = self.getUserByIndex(a)
-
         
         if(self.selectedCBox):
             self.selectedCombo.getItemClick(x,y)
@@ -249,14 +248,20 @@ class Interface:
         self.Enemy = ""
         self.banner = ""
         self.banners = []
+        self.selectedBanner = ""
         self.DMUI = False
+        self.msgFieldSelected = False
 
     def setDMUI(self,flag):
         self.DMUI = flag
 
     def setUser(self,user):
         self.User = user
-        self.banner = UserBanner(self.W,(15,15),self.font,self.Sfont,user.getProfPic(),(0,0,0),(255,255,255),user)
+        if type(user) == u.DM:
+            self.banner = DMUserBanner(self.W,(15,15),self.font,self.Sfont,user.getProfPic(),(0,0,0),(255,255,255),user)
+        else:
+            self.banner = UserBanner(self.W,(15,15),self.font,self.Sfont,user.getProfPic(),(0,0,0),(255,255,255),user)
+
 
     def changeConected(self):
         self.conected = not self.conected
@@ -266,6 +271,9 @@ class Interface:
 
     def getConected(self):
         return self.conected
+
+    def getMsgFieldSelected(self):
+        return self.msgFieldSelected
     
     def startGame(self):
         #DICE
@@ -351,6 +359,71 @@ class Interface:
     def sendMusicStop(self):
         return "ALL|DM|musicS-"
 
+    def sendEnemy(self):
+        name = self.screenItems[4].getResult()
+        hp = self.screenItems[5].getResult()
+        atq = self.screenItems[6].getResult()
+        pfp = self.screenItems[2].getResult()
+        theme = self.screenItems[7].getResult()
+        return "ALL|DM|enemy-"+name+"$"+hp+"$"+atq+"$"+pfp+"$"+theme
+
+    def sendCharge(self):
+        if self.selectedBanner == "":
+            return
+        return "ALL|DM|charge-"+self.selectedBanner.getUsername()+"$"+str(self.selectedBanner.getAmount())
+
+    def sendChange(self):
+        if self.selectedBanner == "":
+            return
+        return "ALL|DM|change-"+self.selectedBanner.getResult()
+
+    def sendEnemyS(self):
+        return "ALL|DM|enemyS-"
+
+    def chargeUser(self,charge):
+        num = 0
+        if("_" in charge[1]):
+            num = -1*int(charge[1].replace("_",""))
+        else:
+            num = int(charge[1])
+
+        if(self.User.getName() == charge[0]):
+            self.User.setMoney(int(self.User.getMoney())+num)
+            with open("chrctrs\\"+charge[0]+".CHRCTR","wb") as f:
+                pkl.dump(self.User,f)
+        else:
+            user = self.Users[charge[0]]
+            user.setMoney(int(user.getMoney())+num)
+
+    def changeUser(self,change):
+        if(self.User.getName() == change[0]):
+            self.User.setHP(int(change[1]))
+            self.User.setATQ(int(change[2]))
+            self.User.setMana(int(change[3]))
+            self.User.setCharisma(int(change[4]))
+            with open("chrctrs\\"+change[0]+".CHRCTR","wb") as f:
+                pkl.dump(self.User,f)
+        else:
+            user = self.Users[change[0]]
+            user.setHP(int(change[1]))
+            user.setATQ(int(change[2]))
+            user.setMana(int(change[3]))
+            user.setCharisma(int(change[4]))
+            if(self.DMUI):
+                for i in self.banners:
+                    if(i.getUsername() == change[0]):
+                        i.updateUser()
+
+    def spawnEnemy(self,pos,size,name,HP,ATQ,pfp,theme):
+        self.Enemy = Enemy(self.W,pos,size,self.font,(240,240,240),name,HP,ATQ,pfp,theme,self.screenItems)
+        self.playMusic(theme)
+
+    def escapeEnemy(self):
+        self.screenItems.append(Dialog(self.W,(920,20),(300,50),self.font,"Enemy escaped",
+                                                           50,0,self.screenItems,(100,100,100),(0,0,0)))
+        self.Enemy = ""
+        self.stopMusic()
+
     def playSound(self,sound):
         Sound = pg.mixer.Sound(sound)
         Sound.set_volume(0.5)
@@ -388,6 +461,18 @@ class Interface:
                ub = i
         if ub!="":
             self.banners.remove(ub)
+
+    def verifyEnemyFields(self):
+        flag = True
+        if(self.screenItems[2].getResult() == ""):
+            flag = False
+        if(self.screenItems[4].getResult() == ""):
+            flag = False
+        if(self.screenItems[6].getResult() == ""):
+            flag = False
+        if(self.screenItems[7].getResult() == ""):
+            flag = False
+        return flag
         
     def appendMSG(self,msg):
         self.msgs.append(msg)
@@ -397,7 +482,11 @@ class Interface:
         nADV = u.Adventurer(Adv[0],Adv[1],Adv[2],Adv[3],Adv[4],Adv[5],
                             Adv[6],Adv[7],Adv[8])
         self.Users[Adv[0]] = nADV
-        self.banners.append(UserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),(0,0,0),nADV))
+
+        if type(self.User) == u.DM:
+            self.banners.append(DMUserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),(0,0,0),nADV))
+        else:
+            self.banners.append(UserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),(0,0,0),nADV))
 
     def throwDice(self,message,flag=False):
         self.diceCooldown = 50
@@ -430,11 +519,11 @@ class Interface:
         #TextArea
         pg.draw.rect(self.W,(204,204,204),(170,10,600,300),border_radius=20)
         
+        if(self.Enemy != ""):
+            self.Enemy.render()
+
         for i in self.screenItems:
             i.render()
-
-        if(self.selectedCBox):
-            self.selectedCombo.showItems()
 
         self.loadMSGS()
 
@@ -442,9 +531,6 @@ class Interface:
             if self.diceCooldown > 0:
                 self.diceCooldown -= 1
 
-            self.banner.render((15,15))
-            for i in range(0,len(self.banners)):
-                self.banners[i].render((15,i*120+135))
         else:
             battleText = self.font.render("Battle",True,(255,255,255))
             self.W.blit(battleText,(170,430))
@@ -454,6 +540,13 @@ class Interface:
             self.W.blit(hpText,(295,505))
             ATQText = self.font.render("ATQ:",True,(255,255,255))
             self.W.blit(ATQText,(295,550))
+
+        if(self.selectedCBox):
+            self.selectedCombo.showItems()
+
+        self.banner.render((15,15))
+        for i in range(0,len(self.banners)):
+            self.banners[i].render((15,i*120+135))
 
     def getClickedOnes(self,x,y):
         action = []
@@ -469,6 +562,7 @@ class Interface:
                     action = action[:-1]
                 else:
                     if(a == 1):
+                        self.msgFieldSelected = True
                         self.selectedTXTField = i
                     elif(a == 3):
                         comboClick = True
@@ -477,6 +571,21 @@ class Interface:
                     if a in dice:
                         if(self.diceCooldown == 0):
                             return a
+        if(self.DMUI):
+            action.append(self.banner.isClicked(x,y))
+            if action[-1] == 1:
+                self.msgFieldSelected = False
+                self.selectedTXTField = self.banner
+            if action[-1] != -1:
+                self.selectedBanner = self.banner
+            for i in self.banners:
+                a = i.isClicked(x,y)
+                action.append(a)
+                if a == 1:
+                    self.msgFieldSelected = False
+                    self.selectedTXTField = i
+                if a != -1:
+                    self.selectedBanner = i
 
         if(self.selectedCBox):
             self.selectedCombo.getItemClick(x,y)
@@ -485,6 +594,13 @@ class Interface:
         if comboClick:
             self.selectedCBox = True
 
+        if 31 in action:
+            if (self.verifyEnemyFields() and self.Enemy == ""):
+                return 31
+
+        if 32 in action and self.Enemy != "":
+            return 32
+            
         if 33 in action:
             self.screenItems[2].setPath("Images\\sampleUser.png")
             self.screenItems[4].setPath("")
@@ -505,9 +621,16 @@ class Interface:
             self.screenItems[12].setPath("")
             self.screenItems[16].setPath("")
 
+        if 51 in action:
+            return 51
+        
+        if 52 in action:
+            return 52
+
         if 1 in action:
             return 1
         elif 2 in action:
+            self.selectedTXTField = ""
             return 2
     
         return -1

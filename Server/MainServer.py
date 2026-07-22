@@ -63,7 +63,7 @@ def reciveAndSend(client,username):
                         send("getADV,"+username,ms[0],"server")
                 else:
                     send(parts[2],parts[0],parts[1])
-                    
+
         except IndexError:
             print(f"Invalid message format from {username}")
             send("Invalid message format",username,"Server")

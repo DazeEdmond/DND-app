@@ -118,22 +118,44 @@ class FileDialog(FieldTool):
     
 #class BTN
 class BTN(FieldTool):
-    def __init__(self,window,pos,size,font,action,text,color=(0,0,0),fontColor=(255,255,255)):
+    def __init__(self,window,pos,size,font,action,text,color=(0,0,0),fontColor=(255,255,255),enabled=True,disabledColor=(150,150,150)):
         text_surface = font.render(text, True, fontColor)
         super().__init__(window,pos,size,font,color,fontColor,(pos[0]+(size[0]-text_surface.get_width())//2,pos[1]+(size[1]-font.get_height())//2),
                                                                              True,text)
         self.action = action
+        self.enabled = enabled
+        self.disabledColor = disabledColor
+
+    def render(self):
+        if(self.enable):
+            self.ACTcolor = self.color
+            if(self.selectable and getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)):
+                self.ACTcolor = (min(self.color[0]+30,255),
+                                min(self.color[1]+30,255),
+                                min(self.color[2]+30,255))
+
+            pg.draw.rect(self.W,self.ACTcolor,(self.pos[0],self.pos[1],self.size[0],self.size[1]),border_radius=20)
+            nameText = self.font.render(self.text,True,self.fontColor)
+            self.W.blit(nameText,self.textPos)
+        else:
+            pg.draw.rect(self.W,self.disabledColor,(self.pos[0],self.pos[1],self.size[0],self.size[1]),border_radius=20)
+            nameText = self.font.render(self.text,True,self.fontColor)
+            self.W.blit(nameText,self.textPos)
+
 
     def isClicked(self,x,y):
-        if(getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y)):
+        if(getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y) and self.enabled):
             return self.action
         return -1
 
+    def enable(self,state):
+        self.enable = state
         
 #class TextField():
 class TXTField(FieldTool):
     def __init__(self,window,pos,size,font,color=(0,0,0),fontColor=(255,255,255),AC="ABCDEFGHIJKLMNOPQRSTUVWXYZ ",canWrite=True):
-        super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,(size[1]/2)-27+pos[1]),True)
+        text_surface = font.render(" ", True, fontColor)
+        super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,pos[1]+(size[1]-font.get_height())//2),True)
         self.selected = False
         self.action = (1,2)
         self.allowedChars = AC
@@ -348,9 +370,160 @@ class UserBanner(FieldTool):
             self.image = pg.image.load(self.path)
             self.image = pg.transform.scale(self.image,self.size)
 
+#class DMUsersBanner
+class DMUserBanner(FieldTool):
+    def __init__(self,window,pos,font,secondFont,imagePath,color=(0,0,0),fontColor=(255,255,255),User="",showed=False):
+        super().__init__(window,pos,(110,110),font,color,fontColor,pos)
+        self.secondFont = secondFont
+        self.path = imagePath
+        try:
+            self.image = pg.image.load(self.path)
+        except FileNotFoundError:
+            self.image = pg.image.load("Images\\sampleUser.png")
+        self.image = pg.transform.scale(self.image,(self.size[0]-20,self.size[1]-20))
+        self.imagePos = (pos[0]+10,pos[1]+10)
+        self.User = User
+        self.username = User.getName()
+        self.showed = showed
+        self.showing = False
+        #Fields
+        self.FHP = TXTField(window,(pos[0]+400,pos[1]+5),(70,35),secondFont,AC="1234567890")
+        self.FHP.setPath(str(User.getHP()))
+        self.FATQ = TXTField(window,(pos[0]+400,pos[1]+40),(70,35),secondFont,AC="1234567890")
+        self.FATQ.setPath(str(User.getATQ()))
+        self.FMana = TXTField(window,(pos[0]+400,pos[1]+75),(70,35),secondFont,AC="1234567890")
+        self.FMana.setPath(str(User.getMana()))
+        self.FCharisma = TXTField(window,(pos[0]+570,pos[1]+5),(70,35),secondFont,AC="1234567890")
+        self.FCharisma.setPath(str(User.getCharisma()))
+        self.FMoney = TXTField(window,(pos[0]+475,pos[1]+75),(70,35),secondFont,AC="-1234567890")
+        self.FMoney.setPath(str(0))
+        self.chargeBTN = BTN(window,(pos[0]+550,pos[1]+75),(70,35),secondFont,51,"Charge",color=(227,210,25))
+        self.changeUserBTN = BTN(window,(pos[0]+645,pos[1]+5),(70,100),secondFont,52,"Change",color=(50,207,81))
+        self.items = []
+        self.items.append(self.FHP)
+        self.items.append(self.FATQ)
+        self.items.append(self.FMana)
+        self.items.append(self.FCharisma)
+        self.items.append(self.FMoney)
+        self.items.append(self.chargeBTN)
+        self.items.append(self.changeUserBTN)
+
+        self.selectedTXTField = ""
+
+    def getUsername(self):
+        return self.username
+
+    def updateUser(self):
+        self.items[0].setPath(str(self.User.getHP()))
+        self.items[1].setPath(str(self.User.getATQ()))
+        self.items[2].setPath(str(self.User.getMana()))
+        self.items[3].setPath(str(self.User.getCharisma()))
+
+    def render(self,pos):
+        self.pos = pos
+        if (self.showed or getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)) or \
+           (self.showing and (getCollision(self.pos[0],self.pos[1],self.size[0]+610,self.size[1],0,0,True))):
+            pg.draw.rect(self.W,self.color,(self.pos[0],self.pos[1],self.size[0]+610,self.size[1]),border_radius=20)
+
+            Text = self.font.render(self.username,True,self.fontColor)
+            self.W.blit(Text,(self.pos[0]+120,self.pos[1]+2))
+
+            Text = self.secondFont.render("Race: "+self.User.getRace(),True,self.fontColor)
+            self.W.blit(Text,(self.pos[0]+120,self.pos[1]+40))
+
+            Text = self.secondFont.render("Role: "+self.User.getRole(),True,self.fontColor)
+            self.W.blit(Text,(self.pos[0]+120,self.pos[1]+65))
+
+            Text = self.secondFont.render("HP: ",True,self.fontColor)
+            self.W.blit(Text,(self.pos[0]+340,self.pos[1]+5))
+
+            Text = self.secondFont.render("ATQ: ",True,self.fontColor)
+            self.W.blit(Text,(self.pos[0]+340,self.pos[1]+40))
+
+            Text = self.secondFont.render("Mana: ",True,self.fontColor)
+            self.W.blit(Text,(self.pos[0]+340,self.pos[1]+75))
+
+            Text = self.secondFont.render("Charisma: ",True,self.fontColor)
+            self.W.blit(Text,(self.pos[0]+470,self.pos[1]+5))
+
+            Text = self.secondFont.render("Money:           "+str(self.User.getMoney()),True,self.fontColor)
+            self.W.blit(Text,(self.pos[0]+470,self.pos[1]+40))
+
+            for i in self.items:
+                i.render()
+
+            self.showing = True
+        else:
+            pg.draw.rect(self.W,self.color,(self.pos[0],self.pos[1],self.size[0],self.size[1]),border_radius=20)
+            self.showing = False
+            self.selectedTXTField = ""
+
+        self.W.blit(self.image,self.imagePos)
+
+    
+    def isClicked(self,x,y):
+        if(self.showing):
+            actions = []
+            for i in self.items:
+                a = i.isClicked(x,y)
+                if(a == 1):
+                    print("Selected: ",i)
+                    self.selectedTXTField = i
+                actions.append(a)
+
+            if 1 in actions:
+                return 1
+
+            self.selectedTXTField = ""            
+            if 51 in actions:
+                return 51
+            if 52 in actions:
+                return 52
+
+            elif 2 in actions:
+                return 2
+
+        return -1
+
+    def setPath(self,path):
+        if(path!=''):
+            self.path = path
+            self.image = pg.image.load(self.path)
+            self.image = pg.transform.scale(self.image,self.size)
+
+    def getResult(self):
+        return self.username+"$"+self.items[0].getResult()+"$"+self.items[1].getResult()+"$"+self.items[2].getResult()+"$"+self.items[3].getResult()
+
+    def getAmount(self):
+        return self.FMoney.getResult().replace("-","_")
+
+    def clean(self):
+        self.FHP.clean()
+        self.FATQ.clean()
+        self.FMana.clean()
+        self.FCharisma.clean()
+        self.FMoney.clean()
+
+    def isEmpty(self):
+        if self.selectedTXTField == "":
+            return True
+        
+        return self.selectedTXTField.isEmpty()
+
+    def write(self,key):
+        if(self.selectedTXTField == "" or not self.showing):
+            return
+
+        self.selectedTXTField.write(key)
+        if self.selectedTXTField.getResult() == "":
+            self.selectedTXTField.write("0")
+
+#class Enemy
 class Enemy:
-    def __init__(self,window,pos,size,font,fontColor,name,HP,ATQ,pfp,Slist):
+    def __init__(self,window,pos,size,font,fontColor,name,HP,ATQ,pfp,theme,Slist):
         self.W = window
+        self.font = font
+        self.fontColor = fontColor
         self.Slist = Slist
         self.pos = pos
         self.size = size
@@ -368,9 +541,10 @@ class Enemy:
         self.pfpPos = (pos[0],pos[1]+50)
         self.deadCooldown = 50
         self.deadFlag = False
+        self.theme = theme
 
         try:
-            self.image = pg.image.load(self.path)
+            self.image = pg.image.load(pfp)
         except FileNotFoundError:
             self.image = pg.image.load("Images\\sampleUser.png")
         self.image = pg.transform.scale(self.image,size)
@@ -399,5 +573,7 @@ class Enemy:
     def attack(self,dmg):
         self.HP = max(self.HP - dmg,0)
         if(HP == 0):
+            self.Slist.append(Dialog(self.W,(920,20),(300,50),self.font,"Enemy beated",
+                                                           50,0,self.screenItems,(100,100,100),(0,0,0)))
             self.deadFlag = True
         self.HPBarSize = size[0]*self.HP/self.HPC
