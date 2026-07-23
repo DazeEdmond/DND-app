@@ -422,9 +422,10 @@ def main():
             interface.loadGame()
             
             if not interface.getConected():
-                login = True
+                login = False
                 conecting = False
                 game = False
+                runing = False
                 unableToConect = False
                 interface.stopMusic()
                 Client.close()
