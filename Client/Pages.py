@@ -6,6 +6,7 @@ import os
 import shutil
 from Utilities import BTN,Dialog,Image,FileDialog,TXTField,ComboBox,Dice,UserBanner,DMUserBanner,Enemy
 from Utilities import Green,Red,White,Black,LightGray,Gray,Yellow
+from Users import DM
 
 #####################################################################
 #///////////////////////////####MENU#####///////////////////////////#
@@ -173,7 +174,7 @@ class Menu:
                             if(self.screenItems[6].getResult()=="ADV"):
                                 user = u.Adventurer(name,race,role,profPic=npp)
                             else:
-                                user = u.DM(name,race,role,profPic=npp)
+                                user = DM(name,race,role,profPic=npp)
 
                             with open("chrctrs\\"+name+".CHRCTR","wb") as f:
                                 pkl.dump(user,f)
@@ -251,7 +252,7 @@ class Interface:
 
     def setUser(self,user):
         self.User = user
-        if type(user) == u.DM:
+        if type(user) == DM:
             self.banner = DMUserBanner(self.W,(15,15),self.font,self.Sfont,user.getProfPic(),Black,(255,255,255),user)
         else:
             self.banner = UserBanner(self.W,(15,15),self.font,self.Sfont,user.getProfPic(),Black,(255,255,255),user)
@@ -328,6 +329,7 @@ class Interface:
         self.screenItems.append(BTN(self.W,(775,105),(90,40),self.font,34,"DMG",Green))#item 21
         self.screenItems.append(TXTField(self.W,(775,180),(90,45),self.font,White,Black,AC="1234567890"))#item 22
         self.screenItems.append(BTN(self.W,(775,230),(90,40),self.font,35,"Heal",Green))#item 23
+        self.screenItems.append(BTN(self.W,(315,380),(100,50),self.font,36,"Attack",Red))#item 24
 
     def write(self,key):
         self.selectedTXTField.write(key)
@@ -423,6 +425,9 @@ class Interface:
     def sendEnemyHeal(self):
         return "ALL|DM|enemyHeal-"+self.screenItems[22].getResult()
 
+    def sendUserDMG(self):
+        return "ALL|DM|usrDMG-"+self.screenItems[1].getResult()+"$"+str(self.Enemy[0].getAtq())
+
     def chargeUser(self,charge):
         num = 0
         if("_" in charge[1]):
@@ -475,7 +480,7 @@ class Interface:
         if(self.Enemy == []):
             return
         self.Enemy[0].attack(int(dmg))
-        self.screenItems.append(Dialog(self.W,(920,50),(300,50),self.font,"Damage -"+dmg,
+        self.screenItems.append(Dialog(self.W,(920,50),(300,50),self.font,"Damage -"+str(dmg),
                                                            50,3,self.screenItems,Red,Black))
         if(self.Enemy[0].getHP() <= 0):
             self.stopMusic()
@@ -484,6 +489,29 @@ class Interface:
         self.Enemy[0].heal(int(heal))
         self.screenItems.append(Dialog(self.W,(920,50),(300,50),self.font,"Heal +"+heal,
                                                            50,3,self.screenItems,Green,Black))
+
+    def reciveDamage(self,dest,dmg):
+        self.screenItems.append(Dialog(self.W,(self.WSize[0]//2-2990,self.WSize[1]//2-50),(300,50),self.font,dest+" -"+str(dmg),
+                                                           50,3,self.screenItems,Red,Black))
+
+        if((not self.DMUI) and (self.User.getName() == dest or dest == "ALL")):
+            self.User.reciveDMG(int(dmg))
+            with open("chrctrs\\"+self.User.getName()+".CHRCTR","wb") as f:
+                pkl.dump(self.User,f)
+            if(self.DMUI):
+                self.banner.updateUser()
+            
+            if self.User.getName() == dest:
+                return
+            
+        for k in self.Users.keys():
+            user = self.Users[k]
+            user.reciveDMG(int(dmg))
+
+        if(self.DMUI):
+            for i in self.banners:
+                i.updateUser()
+
 
     def playSound(self,sound):
         Sound = pg.mixer.Sound(sound)
@@ -499,7 +527,7 @@ class Interface:
 
     def connectUser(self,u):
         UsersTXTBI = 7
-        if(self.DMUI):
+        if(type(self.User) == DM):
             UsersTXTBI = 1
 
         user = u.split("&")
@@ -544,26 +572,34 @@ class Interface:
                             Adv[6],Adv[7],Adv[8])
         self.Users[Adv[0]] = nADV
 
-        if type(self.User) == u.DM:
+        if type(self.User) == DM:
             self.banners.append(DMUserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),Black,nADV))
         else:
             self.banners.append(UserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),Black,nADV))
 
     def throwDice(self,message,flag=False):
-        print(message)
         self.diceCooldown = 50
         parts = message.split('|')
         dice = parts[1].split('#')
         num = int(dice[1])
         rang = int(dice[0])
-        if(dice[2] == "Attack"):
-            self.DMGEnemy(num+int(dice[3]))
+        
         if not flag:
             self.screenItems.append(Dialog(self.W,(920,15),(300,50),self.font,parts[0],
                                                            50,0,self.screenItems,Gray,Black))
-        self.screenItems.append(Dice(self.W,(1030,150),(80,80),self.font,"Images\\Dice.jpg",20,1,self.screenItems,Gray,(255,44,0),num))
+
         if(not self.DMUI):
             self.setTurn(False)
+
+        if(dice[2] == "Attack"):
+            if(int(dice[3])==1):
+                self.screenItems.append(Dialog(self.W,(1030,150),(300,50),self.font,"Missed",
+                                                           50,3,self.screenItems,LightGray,Black))
+                return
+            else:
+                self.DMGEnemy(num+int(dice[3]))
+
+        self.screenItems.append(Dice(self.W,(1030,150),(80,80),self.font,"Images\\Dice.jpg",30,1,self.screenItems,Gray,(255,44,0),num))
 
     def loadMSGS(self):
         lenin = len(self.msgs)-1
@@ -683,6 +719,9 @@ class Interface:
         
         if 35 in action and self.screenItems[22].getResult() != "" and self.Enemy != []:
             return 35
+
+        if 36 in action and self.Enemy != []:
+            return 36
         
         if 41 in action:
             return 41

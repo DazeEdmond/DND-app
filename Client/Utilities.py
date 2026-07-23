@@ -1,5 +1,6 @@
 import pygame as pg
 from tkinter import filedialog as tkfd
+from random import randint
 
 def getCollision(x,y,xs,ys,xc,yc,click=False):
     if(click):
@@ -339,7 +340,10 @@ class UserBanner(FieldTool):
         self.pos = pos
         if (self.showed or getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)) or \
            (self.showing and (getCollision(self.pos[0],self.pos[1],self.size[0]+480,self.size[1],0,0,True))):
-            pg.draw.rect(self.W,self.color,(self.pos[0],self.pos[1],self.size[0]+480,self.size[1]),border_radius=20)
+            if(self.User.getHP() <= 0):
+                pg.draw.rect(self.W,Red,(self.pos[0],self.pos[1],self.size[0]+480,self.size[1]),border_radius=20)
+            else:
+                pg.draw.rect(self.W,self.color,(self.pos[0],self.pos[1],self.size[0]+480,self.size[1]),border_radius=20)
 
             Text = self.font.render(self.username,True,self.fontColor)
             self.W.blit(Text,(self.pos[0]+120,self.pos[1]+2))
@@ -490,7 +494,6 @@ class DMUserBanner(FieldTool):
             for i in self.items:
                 a = i.isClicked(x,y)
                 if(a == 1):
-                    print("Selected: ",i)
                     self.selectedTXTField = i
                 actions.append(a)
 

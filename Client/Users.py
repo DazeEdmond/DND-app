@@ -65,6 +65,8 @@ class Adventurer:
         self.profPic = value
     def addMoney(self,value):
         self.Money += value
+    def reciveDMG(self,dmg):
+        self.HP = max(self.HP-dmg,0)
 
 #############
 ######DM#####

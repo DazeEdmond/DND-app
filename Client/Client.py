@@ -92,7 +92,6 @@ def reciveMessages(interface):
                 if(command[0] == "sound"):
                     interface.playSound(command[1])
                 if(command[0] == "music"):
-                    print(command[1])
                     interface.playMusic(command[1])
                 if(command[0] == "musicS"):
                     interface.stopMusic()
@@ -119,8 +118,12 @@ def reciveMessages(interface):
                 if(command[0] == "turn"):
                     if(command[1] == Username):
                         interface.setTurn(True)
+                if(command[0] == "usrDMG"):
+                    attributes = command[1].split('$')
+                    interface.reciveDamage(attributes[0],attributes[1])
             else:
                 interface.appendMSG(message)
+
             #if(message.split('|')[1] == "SeNDFiLe"):
             #    print("recived File")
             #    reciveFile()
@@ -128,7 +131,6 @@ def reciveMessages(interface):
         except ConnectionAbortedError:
             print("disconected")
             interface.changeConected()
-            Client.close()
             break
         except Exception as e:
             print(e)
@@ -382,6 +384,8 @@ def main():
                         msg = interface.sendEnemyAttack()
                     elif action == 35:
                         msg = interface.sendEnemyHeal()
+                    elif action == 36:
+                        msg = interface.sendUserDMG()
                     elif action == 41:
                         msg = interface.sendMusic()
                     elif action == 42:
@@ -424,6 +428,9 @@ def main():
                 login = True
                 conecting = False
                 game = False
+                unableToConect = False
+                interface.stopMusic()
+                Client.close()
 
             loadWindow(window,display,windowSize)
             clock.tick(50)

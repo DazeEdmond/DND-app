@@ -159,14 +159,24 @@ def reciveUsers():
             client.close()
             
         #Hilos para escuchar y enviar mensajes a destinatarios
-        if("|" not in username):
+        if(username in clients.keys()):
+            try:
+                IUM = "server|Already conected"
+                client.sendall(struct.pack("<H",len(IUM)))
+                client.sendall(IUM.encode("utf-8"))
+            except Exception as e:
+                print("Error sending: User already conected")
+            print(f"{username} disconected")
+            client.close()    
+
+        elif("|" not in username):
             clients[username] = client
             thread = t.Thread(target=reciveAndSend,args=(client,username,))
             thread.start()
             sendEveryone("server",username+"&")
             for u in clients.keys():
                 send(u+"&",username,"server")
-                
+        
         else:
             try:
                 IUM = "server|Invalid Username"
