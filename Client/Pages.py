@@ -162,6 +162,8 @@ class Menu:
                         if(self.verifyFields()):
                             #Guardamos personaje
                             name = self.screenItems[0].getResult()
+                            if(name == "DM"):
+                                continue
                             race = self.screenItems[1].getResult()
                             role = self.screenItems[2].getResult()
                             pp = self.screenItems[4].getResult()
@@ -330,6 +332,8 @@ class Interface:
         self.screenItems.append(TXTField(self.W,(775,180),(90,45),self.font,White,Black,AC="1234567890"))#item 22
         self.screenItems.append(BTN(self.W,(775,230),(90,40),self.font,35,"Heal",Green))#item 23
         self.screenItems.append(BTN(self.W,(315,380),(100,50),self.font,36,"Attack",Red))#item 24
+        self.screenItems.append(BTN(self.W,(170,650),(250,50),self.font,37,"Send enemy Files",Yellow))#item 24
+        self.screenItems.append(BTN(self.W,(430,650),(250,50),self.font,38,"Send sound Files",Yellow))#item 24
 
     def write(self,key):
         self.selectedTXTField.write(key)
@@ -424,6 +428,22 @@ class Interface:
 
     def sendEnemyHeal(self):
         return "ALL|DM|enemyHeal-"+self.screenItems[22].getResult()
+
+    def sendEnemyFiles(self):
+        files = []
+        if self.screenItems[2].getResult() != "Images\\sampleUser.png":
+            files.append(self.screenItems[2].getResult())
+        files.append(self.screenItems[7].getResult())
+        return files
+
+    def sendSoundFiles(self):
+        files = []
+        if self.screenItems[12].getResult() != "":
+            files.append(self.screenItems[12].getResult())
+        if self.screenItems[16].getResult() != "":
+            files.append(self.screenItems[16].getResult())
+        return files
+        
 
     def sendUserDMG(self):
         return "ALL|DM|usrDMG-"+self.screenItems[1].getResult()+"$"+str(self.Enemy[0].getAtq())
@@ -722,6 +742,38 @@ class Interface:
 
         if 36 in action and self.Enemy != []:
             return 36
+        
+        if 37 in action and self.verifyEnemyFields():
+            imagePath = self.screenItems[2].getResult()
+            themePath = self.screenItems[7].getResult()
+            
+            if(imagePath != "Images\\sampleUser.png"):
+                fname,ext = os.path.splitext(imagePath)
+                dest = "sessionFiles/images/"+self.screenItems[4].getResult()+"PFP"+ext
+                shutil.copy(imagePath,dest)
+                self.screenItems[2].setPath(dest)
+
+            fname,ext = os.path.splitext(themePath)
+            dest = "sessionFiles/music/"+self.screenItems[4].getResult()+"Theme"+ext
+            shutil.copy(themePath,dest)
+            self.screenItems[7].setPath(dest)
+            return 37
+
+        if 38 in action:
+            musicPath = self.screenItems[12].getResult()
+            soundPath = self.screenItems[16].getResult()
+            if musicPath != "":
+                fname,ext = os.path.splitext(musicPath)
+                dest = "sessionFiles/music/"+fname+ext
+                shutil.copy(musicPath,dest)
+                self.screenItems[12].setPath(dest)
+                
+            if soundPath != "":
+                fname,ext = os.path.splitext(soundPath)
+                dest = "sessionFiles/sound/"+fname+ext
+                shutil.copy(soundPath,dest)
+                self.screenItems[16].setPath(dest)
+            return 38
         
         if 41 in action:
             return 41

@@ -81,8 +81,10 @@ def reciveMessages(interface):
                 elif "=" in parts[1]:
                     interface.appendADV(parts[1])
                 elif "getADV" in parts[1]:
+                    dest = parts[1].split(",")[1]
                     adv = interface.getUser()
-                    send(parts[1].split(",")[1]+"|server|"+adv.getSelf())
+                    sendFile(adv.getProfPic(),dest+"|DM|sndFile-")
+                    send(dest+"|server|"+adv.getSelf())
                 elif parts[1]=="Invalid Username":
                     interface.changeConected()
             elif '#' in parts[1]:
@@ -121,12 +123,12 @@ def reciveMessages(interface):
                 if(command[0] == "usrDMG"):
                     attributes = command[1].split('$')
                     interface.reciveDamage(attributes[0],attributes[1])
+                if(command[0] == "sndFile"):
+                    print("recived File")
+                    reciveFile()
             else:
                 interface.appendMSG(message)
 
-            #if(message.split('|')[1] == "SeNDFiLe"):
-            #    print("recived File")
-            #    reciveFile()
 
         except ConnectionAbortedError:
             print("disconected")
@@ -138,28 +140,7 @@ def reciveMessages(interface):
             interface.changeConected()
             Client.close()
             break
-'''
-def sendMessages():
-    """
-    send a message to the server with the info of
-    who should recive the message
-    who sent it
-    and the message
-    """
-    while True:
-        try:
-            message = input("Write: ")
-            if(message == "file"):
-                sendFile("pblock.jpg")
-            else:
-                Client.sendall(struct.pack("<H",len(message)))
-                Client.sendall(message.encode("utf-8"))
-        except Exception as e:
-            print(e)
-            print("\nDisconected from server in send Message")
-            Client.close()
-            break
-'''
+
 def send(msg):
     """
     send a message to the server with the info of
@@ -176,20 +157,21 @@ def send(msg):
         Client.close()
 
 
-def sendFile(Filename):
+def sendFile(Filename,fileMess):
     """
+    fileMess = receptor|sender|sndFile-
+
     send a code to the server that describe to who should be
     send the file with a code that means how should be trated the file
     read the bytes of the file
     """
     filesize = os.path.getsize(Filename)
     try:
-        filemess = "AtunValido2|AtunValido|SeNDFiLe"
-        Client.sendall(struct.pack("<H",len(filemess)))
-        Client.sendall(filemess.encode("utf-8"))
+        Client.sendall(struct.pack("<H",len(fileMess)))
+        Client.sendall(fileMess.encode("utf-8"))
         
-        Client.sendall(struct.pack("<H",len("Prueba.jpg")))
-        Client.sendall("Prueba.jpg".encode("utf-8"))
+        Client.sendall(struct.pack("<H",len(Filename)))
+        Client.sendall(Filename.encode("utf-8"))
         Client.sendall(struct.pack("<Q",filesize))
         
         with open(Filename,"rb") as f:
@@ -211,15 +193,10 @@ def getFileSize(Client):
     return the size of the file as INT
     """
     try:
-        expectedBytes = struct.calcsize("<Q")
-        recivedBytes = 0
-        stream = bytes()
-        while recivedBytes < expectedBytes:
-            chunk = Client.recv(expectedBytes-recivedBytes)
-            stream += chunk
-            recivedBytes += len(chunk)
-        filesize = struct.unpack("<Q",stream)[0]
-        return filesize
+        data = recvall(Client,struct.calcsize("<Q"))
+
+        return struct.unpack("<Q",data)[0]
+
     except Exception as e:
         print("Exception in recive FileSize: ")
         print(e)
@@ -233,20 +210,32 @@ def reciveFile():
     """
     try:
         nameSize = struct.unpack("<H",Client.recv(2))[0]
-        Filename = Client.recv(nameSize).decode("utf-8")
+        Filename = recvall(Client,nameSize).decode("utf-8")
         print("File = ",Filename)
         FileSize = getFileSize(Client)
         print("FileSize = ",FileSize)
+        fileBytes = recvall(Client,FileSize)
         with open(Filename,"wb") as f:
-            receivedBytes = 0
-            while receivedBytes < FileSize:
-                chunk = Client.recv(1024)
-                if(chunk):
-                    f.write(chunk)
-                    receivedBytes += len(chunk)
+            f.write(fileBytes)
+    
     except Exception as e:
         print("Exception in recive File: ")
         print(e)
+
+def recvall(client, size):
+    data = bytearray()
+
+    while len(data) < size:
+        chunk = client.recv(size-len(data))
+
+        if not chunk:
+            raise ConnectionError(
+                "Error in recvall"
+            )
+
+        data.extend(chunk)
+
+    return data
 
 #############
 ####PYGAME###
@@ -385,7 +374,15 @@ def main():
                     elif action == 35:
                         msg = interface.sendEnemyHeal()
                     elif action == 36:
-                        msg = interface.sendUserDMG()
+                        msg = interface.sendUserDMG()                        
+                    elif action == 37:
+                        files = interface.sendEnemyFiles()
+                        for f in files:
+                            sendFile(f,"ALL|DM|sndFile-")
+                    elif action == 38:
+                        files = interface.sendSoundFiles()
+                        for f in files:
+                            sendFile(f,"ALL|DM|sndFile-")
                     elif action == 41:
                         msg = interface.sendMusic()
                     elif action == 42:

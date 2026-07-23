@@ -36,6 +36,9 @@ def send(message, receptor, messager):
 """
 Formato de  mensajes
 Receptor|Messager|Message
+
+Formato de send
+Mensaje|Receptor|Mensajero
 """
 
 def reciveAndSend(client,username):
@@ -46,20 +49,30 @@ def reciveAndSend(client,username):
             print(message," ",messageLen)
             parts = message.split('|')
             #Aqui va logica de gestor de receptor
+            
             if(parts[0] != "server" and parts[1] != "server"):
-                if parts[0]=="ALL":
+                #si es un comando del DM
+                if(parts[1]=="DM"):
+                    if("sndFile" in parts[2]):
+                        if(parts[0]=="ALL"):
+                            for u in clients.keys():
+                                if(u != username):
+                                    send(parts[2],u,parts[1])
+                                    sendFile(clients[username],clients[u])
+                        else:
+                            send(parts[2],parts[0],parts[1])
+                            sendFile(clients[username],clients[parts[0]])
+                        #reciveFile(clients[username])
+
+                elif parts[0]=="ALL":
                     sendEveryone(parts[1],parts[2])
                 else:
                     send(parts[2]+"(Wisper)",parts[0],parts[1])
-                #if(parts[2] == "SeNDFiLe"):
-                #    sendFile(clients[username],clients[parts[0]])
-                    #reciveFile(clients[username])
             else:
                 print(f"Message for testing: {message}")
                 if "+" in parts[2]:
                     ms = parts[2].split("+")
                     if(int(ms[1]) == 1):
-                        print("getADV,"+username,ms[0],"server este es el mensaje antes de getADV")
                         send("getADV,"+username,ms[0],"server")
                 else:
                     send(parts[2],parts[0],parts[1])
@@ -88,19 +101,15 @@ def sendFile(Client,Reciver):
     try:
         byteFilenameSize = Client.recv(2)
         nameSize = struct.unpack("<H",byteFilenameSize)[0]
-        Filename = Client.recv(nameSize)
+        Filename = recvall(Client,nameSize)
         FileSize = getFileSize(Client)
         
         Reciver.sendall(byteFilenameSize)
         Reciver.sendall(Filename)
         Reciver.sendall(struct.pack("<Q",FileSize))
         
-        receivedBytes = 0
-        while receivedBytes < FileSize:
-            chunk = Client.recv(1024)
-            if(chunk):
-                Reciver.sendall(chunk)
-                receivedBytes += len(chunk)
+        fileBytes = recvall(Client,FileSize)
+        Reciver.sendall(fileBytes)
 
     except Exception as e:
         print("Error in SendFile")
@@ -108,39 +117,28 @@ def sendFile(Client,Reciver):
 
 def getFileSize(Client):
     try:
-        expectedBytes = struct.calcsize("<Q")
-        #<Q significa agarrar desde el bit menos significativo primero
-        #y la Q significa Unsigned Long long
-        recivedBytes = 0
-        stream = bytes()
-        while recivedBytes < expectedBytes:
-            chunk = Client.recv(expectedBytes-recivedBytes)
-            stream += chunk
-            recivedBytes += len(chunk)
-        filesize = struct.unpack("<Q",stream)[0]
-        return filesize
+        data = recvall(Client,struct.calcsize("<Q"))
+        
+        return struct.unpack("<Q",data)[0]
     except Exception as e:
         print("Exception in recive FileSize: ")
         print(e)
         return 0
 
-def reciveFile(Client):
-    try:
-        nameSize = struct.unpack("<H",Client.recv(2))[0]
-        Filename = Client.recv(nameSize).decode("utf-8")
-        print("File = ",Filename)
-        FileSize = getFileSize(Client)
-        print("FileSize = ",FileSize)
-        with open(Filename,"wb") as f:
-            receivedBytes = 0
-            while receivedBytes < FileSize:
-                chunk = Client.recv(1024)
-                if(chunk):
-                    f.write(chunk)
-                    receivedBytes += len(chunk)
-    except Exception as e:
-        print("Exception in recive File: ")
-        print(e)
+def recvall(client, size):
+    data = bytearray()
+
+    while len(data) < size:
+        chunk = client.recv(size-len(data))
+
+        if not chunk:
+            raise ConnectionError(
+                "Error in recvall"
+            )
+
+        data.extend(chunk)
+
+    return data
 
 def reciveUsers():
     print(f"Server is runing on host: {Host} and port: {Port}")
