@@ -79,6 +79,7 @@ class Menu:
                                            self.screenItems[-1],(75,0,125)))
         self.screenItems.append(ComboBox(self.W,(780,20),(100,50),self.font,Yellow,Black))
         self.screenItems[6].setItems(["ADV","DM"])
+        self.screenItems.append(BTN(self.W,(570,650),(150,50),self.font,17,"Back",(75,0,125)))
 
     def showError(self,txt):
         self.screenItems.append(Dialog(self.W,(self.WSize[0]//2-len(txt)*10-10,self.WSize[1]//2-50),(300,100),self.font,txt,
@@ -170,7 +171,10 @@ class Menu:
                             fname,ext = os.path.splitext(pp)
                             if(pp != "Images\\sampleUser.png"):
                                 npp = "chrctrImages/"+name+"PFP"+ext
-                                shutil.copy(pp,npp)
+                                try:
+                                    shutil.copy(pp,npp)
+                                except Exception as e:
+                                    print("Already in")
                             else:
                                 npp = pp
                             if(ext == ".jpg" or ext == ".png"):
@@ -201,6 +205,8 @@ class Menu:
                     elif(a == 3):
                         comboClick = True
                         self.selectedCombo = i
+                    elif(a == 17):
+                        self.changeCreatingChar()
                     else:
                         goToInterface = True
                         self.User = self.getUserByIndex(a)
@@ -266,6 +272,9 @@ class Interface:
 
     def getUser(self):
         return self.User
+
+    def playersIn(self):
+        return self.banners != []
 
     def getConected(self):
         return self.conected
@@ -445,7 +454,6 @@ class Interface:
             files.append(self.screenItems[16].getResult())
         return files
         
-
     def sendUserDMG(self):
         return "ALL|DM|usrDMG-"+self.screenItems[1].getResult()+"$"+str(self.Enemy[0].getAtq())
 
@@ -512,7 +520,7 @@ class Interface:
                                                            50,3,self.screenItems,Green,Black))
 
     def reciveDamage(self,dest,dmg):
-        self.screenItems.append(Dialog(self.W,(self.WSize[0]//2-2990,self.WSize[1]//2-50),(300,50),self.font,dest+" -"+str(dmg),
+        self.screenItems.append(Dialog(self.W,(self.WSize[0]//2-299,self.WSize[1]//2-50),(300,50),self.font,dest+" -"+str(dmg),
                                                            50,3,self.screenItems,Red,Black))
 
         if((not self.DMUI) and (self.User.getName() == dest or dest == "ALL")):
@@ -535,13 +543,21 @@ class Interface:
 
 
     def playSound(self,sound):
-        Sound = pg.mixer.Sound(sound)
-        Sound.set_volume(0.5)
-        Sound.play()
+        try:
+            Sound = pg.mixer.Sound(sound)
+            Sound.set_volume(0.3)
+            Sound.play()
+        except Exception as e:
+            self.screenItems.append(Dialog(self.W,(self.WSize[0]//2-299,self.WSize[1]//2-50),(300,50),"Sound not found",
+                                                           50,3,self.screenItems,Red,Black))
 
     def playMusic(self,music):
-        pg.mixer.music.load(music)
-        pg.mixer.music.play(-1)
+        try:
+            pg.mixer.music.load(music)
+            pg.mixer.music.play(-1)
+        except Exception as e:
+            self.screenItems.append(Dialog(self.W,(self.WSize[0]//2-299,self.WSize[1]//2-50),(300,50),"Music not found",
+                                                           50,3,self.screenItems,Red,Black))
 
     def stopMusic(self):
         pg.mixer.music.stop()
@@ -751,12 +767,19 @@ class Interface:
             if(imagePath != "Images\\sampleUser.png"):
                 fname,ext = os.path.splitext(imagePath)
                 dest = "sessionFiles/images/"+self.screenItems[4].getResult()+"PFP"+ext
-                shutil.copy(imagePath,dest)
+                try:
+                    shutil.copy(imagePath,dest)
+                except Exception as e:
+                    print("Already in")
                 self.screenItems[2].setPath(dest)
 
             fname,ext = os.path.splitext(themePath)
+
             dest = "sessionFiles/music/"+self.screenItems[4].getResult()+"Theme"+ext
-            shutil.copy(themePath,dest)
+            try:
+                shutil.copy(themePath,dest)
+            except Exception as e:
+                    print("Already in")
             self.screenItems[7].setPath(dest)
             return 37
 
@@ -765,15 +788,24 @@ class Interface:
             soundPath = self.screenItems[16].getResult()
             if musicPath != "":
                 fname,ext = os.path.splitext(musicPath)
-                dest = "sessionFiles/music/"+fname+ext
-                shutil.copy(musicPath,dest)
+                name = os.path.basename(fname)
+                dest = "sessionFiles/music/"+name+ext
+                try:
+                    shutil.copy(musicPath,dest)
+                except Exception as e:
+                    print("Already in")
                 self.screenItems[12].setPath(dest)
                 
             if soundPath != "":
                 fname,ext = os.path.splitext(soundPath)
-                dest = "sessionFiles/sound/"+fname+ext
-                shutil.copy(soundPath,dest)
+                name = os.path.basename(fname)
+                dest = "sessionFiles/sound/"+name+ext
+                try:
+                    shutil.copy(soundPath,dest)
+                except Exception as e:
+                    print("Already in")
                 self.screenItems[16].setPath(dest)
+
             return 38
         
         if 41 in action:

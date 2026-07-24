@@ -258,7 +258,7 @@ def main():
 
     pg.init()
     pg.mixer.init()
-    pg.mixer.music.set_volume(0.5)
+    pg.mixer.music.set_volume(0.2)
     windowSize = (1280,720)
     window = pg.Surface(windowSize)
     display = pg.display.set_mode(windowSize)
@@ -377,12 +377,14 @@ def main():
                         msg = interface.sendUserDMG()                        
                     elif action == 37:
                         files = interface.sendEnemyFiles()
-                        for f in files:
-                            sendFile(f,"ALL|DM|sndFile-")
+                        if(interface.playersIn()):
+                            for f in files:
+                                sendFile(f,"ALL|DM|sndFile-")
                     elif action == 38:
                         files = interface.sendSoundFiles()
-                        for f in files:
-                            sendFile(f,"ALL|DM|sndFile-")
+                        if(interface.playersIn()):
+                            for f in files:
+                                sendFile(f,"ALL|DM|sndFile-")
                     elif action == 41:
                         msg = interface.sendMusic()
                     elif action == 42:
