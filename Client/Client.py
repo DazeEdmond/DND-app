@@ -17,7 +17,7 @@ from Users import DM
 ########
 ####
 
-Host = "192.168.100.26"
+Host = "146.235.214.14"
 Port = 5000
 Username = ""
 Client = ""
