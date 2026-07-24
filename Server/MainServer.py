@@ -52,17 +52,16 @@ def reciveAndSend(client,username):
             
             if(parts[0] != "server" and parts[1] != "server"):
                 #si es un comando del DM
-                if(parts[1]=="DM"):
-                    if("sndFile" in parts[2]):
-                        if(parts[0]=="ALL"):
-                            for u in clients.keys():
-                                if(u != username):
-                                    send(parts[2],u,parts[1])
-                                    sendFile(clients[username],clients[u])
-                        else:
-                            send(parts[2],parts[0],parts[1])
-                            sendFile(clients[username],clients[parts[0]])
-                        #reciveFile(clients[username])
+                if(parts[1]=="DM" and "sndFile" in parts[2]):
+                    if(parts[0]=="ALL"):
+                        for u in clients.keys():
+                            if(u != username):
+                                send(parts[2],u,parts[1])
+                                sendFile(clients[username],clients[u])
+                    else:
+                        send(parts[2],parts[0],parts[1])
+                        sendFile(clients[username],clients[parts[0]])
+                    #reciveFile(clients[username])
 
                 elif parts[0]=="ALL":
                     sendEveryone(parts[1],parts[2])

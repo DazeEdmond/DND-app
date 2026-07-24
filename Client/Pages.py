@@ -173,16 +173,17 @@ class Menu:
                                 shutil.copy(pp,npp)
                             else:
                                 npp = pp
-                            if(self.screenItems[6].getResult()=="ADV"):
-                                user = u.Adventurer(name,race,role,profPic=npp)
-                            else:
-                                user = DM(name,race,role,profPic=npp)
+                            if(ext == ".jpg" or ext == ".png"):
+                                if(self.screenItems[6].getResult()=="ADV"):
+                                    user = u.Adventurer(name,race,role,profPic=npp)
+                                else:
+                                    user = DM(name,race,role,profPic=npp)
 
-                            with open("chrctrs\\"+name+".CHRCTR","wb") as f:
-                                pkl.dump(user,f)
+                                with open("chrctrs\\"+name+".CHRCTR","wb") as f:
+                                    pkl.dump(user,f)
 
-                            self.selectedCBox = False
-                            self.changeCreatingChar()
+                                self.selectedCBox = False
+                                self.changeCreatingChar()
                             return 2
                         else:
                             self.screenItems.append(Dialog(self.W,(self.WSize[0]//2-150,self.WSize[1]//2-50),(300,100),self.font,"Invalid Username",
