@@ -338,6 +338,7 @@ class UserBanner(FieldTool):
 
     def render(self,pos):
         self.pos = pos
+        self.imagePos = (pos[0]+10,pos[1]+10)
         if (self.showed or getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)) or \
            (self.showing and (getCollision(self.pos[0],self.pos[1],self.size[0]+480,self.size[1],0,0,True))):
             if(self.User.getHP() <= 0):

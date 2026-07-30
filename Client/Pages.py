@@ -594,6 +594,17 @@ class Interface:
             return 1,user[0]
         return 0,""
 
+    def appendADV(self,adv):
+        Adv = adv.split("=")
+        nADV = u.Adventurer(Adv[0],Adv[1],Adv[2],Adv[3],Adv[4],Adv[5],
+                            Adv[6],Adv[7],Adv[8])
+        self.Users[Adv[0]] = nADV
+
+        if type(self.User) == DM:
+            self.banners.append(DMUserBanner(self.W,(15,len(self.banners)*120+135),self.font,self.Sfont,Adv[8],(255,255,255),Black,nADV))
+        else:
+            self.banners.append(UserBanner(self.W,(15,len(self.banners)*120+135),self.font,self.Sfont,Adv[8],(255,255,255),Black,nADV))
+
     def disconnectUser(self,u):
         UsersTXTBI = 7
         if(self.DMUI):
@@ -623,17 +634,6 @@ class Interface:
         
     def appendMSG(self,msg):
         self.msgs.append(msg)
-
-    def appendADV(self,adv):
-        Adv = adv.split("=")
-        nADV = u.Adventurer(Adv[0],Adv[1],Adv[2],Adv[3],Adv[4],Adv[5],
-                            Adv[6],Adv[7],Adv[8])
-        self.Users[Adv[0]] = nADV
-
-        if type(self.User) == DM:
-            self.banners.append(DMUserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),Black,nADV))
-        else:
-            self.banners.append(UserBanner(self.W,(15,len(self.banners)*150+135),self.font,self.Sfont,Adv[8],(255,255,255),Black,nADV))
 
     def throwDice(self,message,flag=False):
         self.diceCooldown = 50

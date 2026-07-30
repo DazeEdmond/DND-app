@@ -83,7 +83,9 @@ def reciveMessages(interface):
                 elif "getADV" in parts[1]:
                     dest = parts[1].split(",")[1]
                     adv = interface.getUser()
-                    sendFile(adv.getProfPic(),dest+"|DM|sndFile-")
+                    pfp = adv.getProfPic()
+                    if(pfp != "Images\\sampleUser.png"):
+                        sendFile(pfp,dest+"|DM|sndFile-")
                     send(dest+"|server|"+adv.getSelf())
                 elif parts[1]=="Invalid Username":
                     interface.changeConected()
