@@ -337,14 +337,14 @@ def main():
                 if not flag:
                     login = True
                     unableToConect = True
-
+                else:
+                    game = True
                 conecting = False
 
             loadWindow(window,display,windowSize)
             clock.tick(50)
 
         if(type(ME) == DM):
-            role = True
             interface.setDMUI(True)
             interface.setDMUIInterface()
 
@@ -423,12 +423,13 @@ def main():
                         else:
                             interface.write(e.unicode)
             
-            
+            print("estado: ",interface.getConected())
             if not interface.getConected():
                 login = True
                 conecting = False
                 game = False
                 unableToConect = False
+                menu.showError("Server Disconected")
                 interface.resetInterface()
                 continue
             else: 

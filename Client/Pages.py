@@ -83,7 +83,7 @@ class Menu:
 
     def showError(self,txt):
         self.screenItems.append(Dialog(self.W,(self.WSize[0]//2-len(txt)*10-10,self.WSize[1]//2-50),(300,100),self.font,txt,
-                                                           25,1,self.screenItems,Gray,Black))
+                                                           35,1,self.screenItems,Gray,Black))
 
     def write(self,key):
         self.selectedTXTField.write(key)
