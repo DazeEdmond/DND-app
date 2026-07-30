@@ -14,6 +14,7 @@ server.bind((Host,Port))
 server.listen()
 
 clients = {} #Username,Client#
+clientsLock = {} #Username,ThreadLock#
 
 def sendEveryone(username,msg):
     UN = clients.keys()
@@ -23,14 +24,16 @@ def sendEveryone(username,msg):
 
 def send(message, receptor, messager):
     try:
-        mess = messager+'|'+message
-        clients[receptor].sendall(struct.pack("<H",len(mess)))
-        clients[receptor].sendall(mess.encode("utf-8"))
+        with clientsLock[receptor]:
+            mess = messager+'|'+message
+            clients[receptor].sendall(struct.pack("<H",len(mess)))
+            clients[receptor].sendall(mess.encode("utf-8"))
     except Exception as e:
         print(receptor + " Left error in send:\n")
         print(f"{e}")
         clients[receptor].close()
         del clients[receptor]
+        del clientsLock[receptor]
         sendEveryone("server",receptor+"-")
 
 """
@@ -57,10 +60,10 @@ def reciveAndSend(client,username):
                         for u in clients.keys():
                             if(u != username):
                                 send(parts[2],u,parts[1])
-                                sendFile(clients[username],clients[u])
+                                sendFile(clients[username],clients[u],u)
                     else:
                         send(parts[2],parts[0],parts[1])
-                        sendFile(clients[username],clients[parts[0]])
+                        sendFile(clients[username],clients[parts[0]],parts[0])
                     #reciveFile(clients[username])
 
                 elif parts[0]=="ALL":
@@ -84,6 +87,7 @@ def reciveAndSend(client,username):
             print(f"{username} disconected")
             clients[username].close()
             del clients[username]
+            del clientsLock[username]
             sendEveryone("server",username+"-")
             print(clients)
             break
@@ -93,22 +97,24 @@ def reciveAndSend(client,username):
             print(f"{e}\n")
             clients[username].close()
             del clients[username]
+            del clientsLock[username]
             sendEveryone("server",username+"-")
             break
 
-def sendFile(Client,Reciver):
+def sendFile(Client,Reciver,reciverName):
     try:
-        byteFilenameSize = Client.recv(2)
-        nameSize = struct.unpack("<H",byteFilenameSize)[0]
-        Filename = recvall(Client,nameSize)
-        FileSize = getFileSize(Client)
+        with clientsLock[Reciver]:
+            byteFilenameSize = Client.recv(2)
+            nameSize = struct.unpack("<H",byteFilenameSize)[0]
+            Filename = recvall(Client,nameSize)
+            FileSize = getFileSize(Client)
         
-        Reciver.sendall(byteFilenameSize)
-        Reciver.sendall(Filename)
-        Reciver.sendall(struct.pack("<Q",FileSize))
-        
-        fileBytes = recvall(Client,FileSize)
-        Reciver.sendall(fileBytes)
+            Reciver.sendall(byteFilenameSize)
+            Reciver.sendall(Filename)
+            Reciver.sendall(struct.pack("<Q",FileSize))
+            
+            fileBytes = recvall(Client,FileSize)
+            Reciver.sendall(fileBytes)
 
     except Exception as e:
         print("Error in SendFile")
@@ -168,6 +174,7 @@ def reciveUsers():
 
         elif("|" not in username):
             clients[username] = client
+            clients[username] = t.lock()
             thread = t.Thread(target=reciveAndSend,args=(client,username,))
             thread.start()
             sendEveryone("server",username+"&")

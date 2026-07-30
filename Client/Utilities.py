@@ -324,7 +324,7 @@ class UserBanner(FieldTool):
         except FileNotFoundError:
             self.image = pg.image.load("Images\\sampleUser.png")
         self.image = pg.transform.scale(self.image,(self.size[0]-20,self.size[1]-20))
-        self.imagePos = (pos[0]+10,pos[1]+10)
+        self.imagePos = (self.pos[0]+10,self.pos[1]+10)
         self.User = User
         self.username = User.getName()
         self.showed = showed

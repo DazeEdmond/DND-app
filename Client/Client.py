@@ -70,7 +70,7 @@ def reciveMessages(interface):
         try:
             messageLen = struct.unpack("<H",Client.recv(2))[0]
             message = Client.recv(messageLen).decode("utf-8")
-            print(f"{message}")
+            print(f"{message} message bytes: {messageLen}")
             parts = message.split('|')
             if(parts[0] == "server"):
                 if '&' in parts[1]:
