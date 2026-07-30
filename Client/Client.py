@@ -133,6 +133,7 @@ def reciveMessages(interface):
         except ConnectionAbortedError:
             print("disconected")
             interface.changeConected()
+            Client.close()
             break
         except Exception as e:
             print(e)
@@ -140,6 +141,7 @@ def reciveMessages(interface):
             interface.changeConected()
             Client.close()
             break
+    print("saliendo")
 
 def send(msg):
     """
@@ -421,16 +423,17 @@ def main():
                         else:
                             interface.write(e.unicode)
             
-            interface.loadGame()
             
             if not interface.getConected():
-                login = False
+                login = True
                 conecting = False
                 game = False
-                runing = False
                 unableToConect = False
-                interface.stopMusic()
-                Client.close()
+                interface.resetInterface()
+                continue
+            else: 
+                interface.loadGame()
+
 
             loadWindow(window,display,windowSize)
             clock.tick(50)

@@ -10,6 +10,7 @@ Port = int(os.environ.get("PORT",5000))
 
 #Iniciacion del servidor
 server = s.socket(s.AF_INET,s.SOCK_STREAM)
+server.setsockopt(s.SOL_SOCKET, s.SO_REUSEADDR, 1)
 server.bind((Host,Port))
 server.listen()
 
@@ -174,7 +175,7 @@ def reciveUsers():
 
         elif("|" not in username):
             clients[username] = client
-            clients[username] = t.lock()
+            clients[username] = t.Lock()
             thread = t.Thread(target=reciveAndSend,args=(client,username,))
             thread.start()
             sendEveryone("server",username+"&")

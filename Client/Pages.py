@@ -270,6 +270,27 @@ class Interface:
     def changeConected(self):
         self.conected = not self.conected
 
+    def resetInterface(self):
+        self.selectedTXTField = ""
+        self.selectedCombo = ""
+        self.selectedCBox = False
+        self.conected = True
+        self.diceCooldown = 0
+        self.User = ""
+        self.Users = {}
+        self.msgs = []
+        self.screenItems = []
+        self.Enemy = []
+        self.banner = ""
+        self.banners = []
+        self.selectedBanner = ""
+        self.DMUI = False
+        self.msgFieldSelected = False
+        self.Turn = False
+        self.mode = ""
+        self.startGame()
+        self.stopMusic()
+
     def getUser(self):
         return self.User
 
