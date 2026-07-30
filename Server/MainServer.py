@@ -175,7 +175,7 @@ def reciveUsers():
 
         elif("|" not in username):
             clients[username] = client
-            clients[username] = t.Lock()
+            clientsLock[username] = t.Lock()
             thread = t.Thread(target=reciveAndSend,args=(client,username,))
             thread.start()
             sendEveryone("server",username+"&")
