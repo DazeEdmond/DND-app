@@ -48,7 +48,7 @@ Mensaje|Receptor|Mensajero
 def reciveAndSend(client,username):
     while True:
         try:
-            messageLen = struct.unpack("<H",clients[username].recv(2))[0]
+            messageLen = struct.unpack("<H",recvall(clients[username],2))[0]
             message = clients[username].recv(messageLen).decode("utf-8")
             print(message," ",messageLen)
             parts = message.split('|')
@@ -104,8 +104,8 @@ def reciveAndSend(client,username):
 
 def sendFile(Client,Reciver,reciverName):
     try:
-        with clientsLock[Reciver]:
-            byteFilenameSize = Client.recv(2)
+        with clientsLock[reciverName]:
+            byteFilenameSize = recvall(Client,2)
             nameSize = struct.unpack("<H",byteFilenameSize)[0]
             Filename = recvall(Client,nameSize)
             FileSize = getFileSize(Client)
@@ -152,7 +152,7 @@ def reciveUsers():
         username = "|"
         client, adress = server.accept()
         try:
-            usernameLen = struct.unpack("<H",client.recv(2))[0]
+            usernameLen = struct.unpack("<H",recvall(client,2))[0]
             code = client.recv(usernameLen).decode("utf-8")
             username = code
             

@@ -423,7 +423,6 @@ def main():
                         else:
                             interface.write(e.unicode)
             
-            print("estado: ",interface.getConected())
             if not interface.getConected():
                 login = True
                 conecting = False
