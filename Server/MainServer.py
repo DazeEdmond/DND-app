@@ -66,6 +66,7 @@ def reciveAndSend(client,username):
                         send(parts[2],parts[0],parts[1])
                         sendFile(clients[username],clients[parts[0]],parts[0])
                     #reciveFile(clients[username])
+                    print("SENT!")
 
                 elif parts[0]=="ALL":
                     sendEveryone(parts[1],parts[2])
