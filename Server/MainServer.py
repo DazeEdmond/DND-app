@@ -30,7 +30,7 @@ def send(message, receptor, messager):
             data = mess.encode("utf-8")
             clients[receptor].sendall(struct.pack("<H", len(data)))
             clients[receptor].sendall(data)
-            
+
     except Exception as e:
         print(receptor + " Left error in send:\n")
         print(f"{e}")
@@ -60,10 +60,10 @@ def reciveAndSend(client,username):
                 #si es un comando del DM
                 if(parts[1]=="DM" and "sndFile" in parts[2]):
                     if(parts[0]=="ALL"):
-                        for u in clients.keys():
-                            if(u != username):
-                                send(parts[2],u,parts[1])
-                                sendFile(clients[username],clients[u],u)
+                        for u in list(clients.keys()):
+                            if u != username:
+                                send(parts[2], u, parts[1])
+                                sendFile(clients[username], clients[u], u)
                     else:
                         send(parts[2],parts[0],parts[1])
                         sendFile(clients[username],clients[parts[0]],parts[0])
@@ -107,22 +107,51 @@ def reciveAndSend(client,username):
 
 def sendFile(Client,Reciver,reciverName):
     try:
-        with clientsLock[reciverName]:
-            byteFilenameSize = recvall(Client,2)
-            nameSize = struct.unpack("<H",byteFilenameSize)[0]
-            Filename = recvall(Client,nameSize)
-            FileSize = getFileSize(Client)
-        
-            Reciver.sendall(byteFilenameSize)
-            Reciver.sendall(Filename)
-            Reciver.sendall(struct.pack("<Q",FileSize))
-            
-            fileBytes = recvall(Client,FileSize)
-            Reciver.sendall(fileBytes)
+        with clientsLock[receiverName]:
 
+            print("SEND_FILE: esperando nombre")
+
+            nameSizeBytes = recvall(Client, 2)
+            nameSize = struct.unpack("<H", nameSizeBytes)[0]
+
+            print("SEND_FILE: nameSize =", nameSize)
+
+            filenameBytes = recvall(Client, nameSize)
+            filename = filenameBytes.decode("utf-8")
+
+            print("SEND_FILE: filename =", filename)
+
+            print("SEND_FILE: esperando FileSize")
+
+            fileSizeBytes = recvall(Client, 8)
+            fileSize = struct.unpack("<Q", fileSizeBytes)[0]
+
+            print("SEND_FILE: FileSize =", fileSize)
+
+            Receiver.sendall(nameSizeBytes)
+            Receiver.sendall(filenameBytes)
+            Receiver.sendall(fileSizeBytes)
+
+            print("SEND_FILE: esperando archivo")
+
+            fileBytes = recvall(Client, fileSize)
+
+            print(
+                "SEND_FILE: archivo recibido",
+                len(fileBytes),
+                "/",
+                fileSize
+            )
+
+            Receiver.sendall(fileBytes)
+
+            print("SEND_FILE: terminado")
     except Exception as e:
         print("Error in SendFile")
         print(e)
+        print("ERROR EN SENDFILE:")
+        print(type(e).__name__, e)
+        raise
 
 def getFileSize(Client):
     try:
