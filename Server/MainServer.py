@@ -18,10 +18,9 @@ clients = {} #Username,Client#
 clientsLock = {} #Username,ThreadLock#
 
 def sendEveryone(username,msg):
-    UN = clients.keys()
-    for u in UN:
+    for u in list(clients.keys()):
         if u != username:
-            send(msg,u,username)
+            send(msg, u, username)
 
 def send(message, receptor, messager):
     try:
@@ -57,16 +56,18 @@ def reciveAndSend(client,username):
             #Aqui va logica de gestor de receptor
             
             if(parts[0] != "server" and parts[1] != "server"):
-                #si es un comando del DM
+                #si no es un comando del servidor
                 if(parts[1]=="DM" and "sndFile" in parts[2]):
+                    fileData = recvFile(clients[username])
+
                     if(parts[0]=="ALL"):
                         for u in list(clients.keys()):
                             if u != username:
                                 send(parts[2], u, parts[1])
-                                sendFile(clients[username], clients[u], u)
+                                sendFile(fileData, clients[u], u)
                     else:
                         send(parts[2],parts[0],parts[1])
-                        sendFile(clients[username],clients[parts[0]],parts[0])
+                        sendFile(fileData,clients[parts[0]],parts[0])
                     #reciveFile(clients[username])
                     print("SENT!")
 
@@ -105,57 +106,51 @@ def reciveAndSend(client,username):
             sendEveryone("server",username+"-")
             break
 
-def sendFile(Client,Reciver,reciverName):
+def recvFile(Client):
+    try:
+        nameSizeBytes = recvall(Client, 2)
+        nameSize = struct.unpack("<H", nameSizeBytes)[0]
+
+        filenameBytes = recvall(Client, nameSize)
+        filename = filenameBytes.decode("utf-8")
+
+        fileSizeBytes = recvall(Client, 8)
+        fileSize = struct.unpack("<Q", fileSizeBytes)[0]
+
+        fileBytes = recvall(Client, fileSize)
+
+        print("RECVFILE:", filename)
+        print("RECVFILE size:", fileSize)
+
+        fileBytes = recvall(Client, fileSize)
+
+        print(
+            "RECVFILE terminado:",
+            len(fileBytes),
+            "/",
+            fileSize
+        )
+
+        return nameSizeBytes, filenameBytes, fileSizeBytes, fileBytes
+    except Exception as e:
+        print("Error in recvFile")
+        print(e)
+        print(type(e).__name__, e)
+
+def sendFile(fileData,Reciver,reciverName):
     try:
         with clientsLock[reciverName]:
-
-            print("SEND_FILE: esperando nombre")
-
-            # Tamaño del nombre
-            nameSizeBytes = recvall(Client, 2)
-            nameSize = struct.unpack("<H", nameSizeBytes)[0]
-
-            print("SEND_FILE: nameSize =", nameSize)
-
-            # Nombre
-            filenameBytes = recvall(Client, nameSize)
-            filename = filenameBytes.decode("utf-8")
-
-            print("SEND_FILE: filename =", filename)
-
-            # Tamaño del archivo
-            print("SEND_FILE: esperando FileSize")
-
-            fileSizeBytes = recvall(Client, 8)
-            fileSize = struct.unpack("<Q", fileSizeBytes)[0]
-
-            print("SEND_FILE: FileSize =", fileSize)
-
-            # Enviar metadata al receptor
+            nameSizeBytes, filenameBytes, fileSizeBytes, fileBytes = fileData
+            
             Reciver.sendall(nameSizeBytes)
             Reciver.sendall(filenameBytes)
             Reciver.sendall(fileSizeBytes)
-
-            # Recibir archivo
-            print("SEND_FILE: esperando archivo")
-
-            fileBytes = recvall(Client, fileSize)
-
-            print(
-                "SEND_FILE: archivo recibido",
-                len(fileBytes),
-                "/",
-                fileSize
-            )
-
-            # Enviar archivo al receptor
             Reciver.sendall(fileBytes)
 
             print("SEND_FILE: terminado")
     except Exception as e:
         print("Error in SendFile")
         print(e)
-        print("ERROR EN SENDFILE:")
         print(type(e).__name__, e)
 
 def getFileSize(Client):
@@ -216,7 +211,7 @@ def reciveUsers():
             thread = t.Thread(target=reciveAndSend,args=(client,username,))
             thread.start()
             sendEveryone("server",username+"&")
-            for u in clients.keys():
+            for u in list(clients.keys()):
                 send(u+"&",username,"server")
         
         else:
