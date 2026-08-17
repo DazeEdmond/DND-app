@@ -107,20 +107,23 @@ def reciveAndSend(client,username):
 
 def sendFile(Client,Reciver,reciverName):
     try:
-        with clientsLock[receiverName]:
+        with clientsLock[reciverName]:
 
             print("SEND_FILE: esperando nombre")
 
+            # Tamaño del nombre
             nameSizeBytes = recvall(Client, 2)
             nameSize = struct.unpack("<H", nameSizeBytes)[0]
 
             print("SEND_FILE: nameSize =", nameSize)
 
+            # Nombre
             filenameBytes = recvall(Client, nameSize)
             filename = filenameBytes.decode("utf-8")
 
             print("SEND_FILE: filename =", filename)
 
+            # Tamaño del archivo
             print("SEND_FILE: esperando FileSize")
 
             fileSizeBytes = recvall(Client, 8)
@@ -128,10 +131,12 @@ def sendFile(Client,Reciver,reciverName):
 
             print("SEND_FILE: FileSize =", fileSize)
 
-            Receiver.sendall(nameSizeBytes)
-            Receiver.sendall(filenameBytes)
-            Receiver.sendall(fileSizeBytes)
+            # Enviar metadata al receptor
+            Reciver.sendall(nameSizeBytes)
+            Reciver.sendall(filenameBytes)
+            Reciver.sendall(fileSizeBytes)
 
+            # Recibir archivo
             print("SEND_FILE: esperando archivo")
 
             fileBytes = recvall(Client, fileSize)
@@ -143,7 +148,8 @@ def sendFile(Client,Reciver,reciverName):
                 fileSize
             )
 
-            Receiver.sendall(fileBytes)
+            # Enviar archivo al receptor
+            Reciver.sendall(fileBytes)
 
             print("SEND_FILE: terminado")
     except Exception as e:
@@ -151,7 +157,6 @@ def sendFile(Client,Reciver,reciverName):
         print(e)
         print("ERROR EN SENDFILE:")
         print(type(e).__name__, e)
-        raise
 
 def getFileSize(Client):
     try:
