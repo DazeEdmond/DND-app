@@ -117,8 +117,6 @@ def recvFile(Client):
         fileSizeBytes = recvall(Client, 8)
         fileSize = struct.unpack("<Q", fileSizeBytes)[0]
 
-        fileBytes = recvall(Client, fileSize)
-
         print("RECVFILE:", filename)
         print("RECVFILE size:", fileSize)
 
@@ -131,11 +129,17 @@ def recvFile(Client):
             fileSize
         )
 
-        return nameSizeBytes, filenameBytes, fileSizeBytes, fileBytes
+        return (
+            nameSizeBytes,
+            filenameBytes,
+            fileSizeBytes,
+            fileBytes
+        )
+
     except Exception as e:
-        print("Error in recvFile")
-        print(e)
+        print("Error in recvFile:")
         print(type(e).__name__, e)
+        raise
 
 def sendFile(fileData,Reciver,reciverName):
     try:
@@ -167,14 +171,14 @@ def recvall(client, size):
     data = bytearray()
 
     while len(data) < size:
-        chunk = client.recv(size-len(data))
+        chunk = client.recv(size - len(data))
 
         if not chunk:
-            raise ConnectionError(
-                "Error in recvall"
-            )
+            raise ConnectionError("Error in recvall")
 
         data.extend(chunk)
+
+        print("RECV:", len(data), "/", size)
 
     return data
 
