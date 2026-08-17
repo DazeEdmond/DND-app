@@ -26,9 +26,11 @@ def sendEveryone(username,msg):
 def send(message, receptor, messager):
     try:
         with clientsLock[receptor]:
-            mess = messager+'|'+message
-            clients[receptor].sendall(struct.pack("<H",len(mess)))
-            clients[receptor].sendall(mess.encode("utf-8"))
+            mess = messager + '|' + message
+            data = mess.encode("utf-8")
+            clients[receptor].sendall(struct.pack("<H", len(data)))
+            clients[receptor].sendall(data)
+            
     except Exception as e:
         print(receptor + " Left error in send:\n")
         print(f"{e}")
@@ -48,8 +50,8 @@ Mensaje|Receptor|Mensajero
 def reciveAndSend(client,username):
     while True:
         try:
-            messageLen = struct.unpack("<H",recvall(clients[username],2))[0]
-            message = clients[username].recv(messageLen).decode("utf-8")
+            messageLen = struct.unpack("<H", recvall(clients[username], 2))[0]
+            message = recvall(clients[username], messageLen).decode("utf-8")
             print(message," ",messageLen)
             parts = message.split('|')
             #Aqui va logica de gestor de receptor
@@ -154,7 +156,7 @@ def reciveUsers():
         client, adress = server.accept()
         try:
             usernameLen = struct.unpack("<H",recvall(client,2))[0]
-            code = client.recv(usernameLen).decode("utf-8")
+            code = recvall(client, usernameLen).decode("utf-8")
             username = code
             
             print(username + " Conected")

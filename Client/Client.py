@@ -21,6 +21,7 @@ Host = "146.235.214.14"
 Port = 5000
 Username = ""
 Client = ""
+sendLock = t.Lock()
 
 ####
 ########
@@ -68,8 +69,8 @@ def reciveMessages(interface):
     """
     while True:
         try:
-            messageLen = struct.unpack("<H",Client.recv(2))[0]
-            message = Client.recv(messageLen).decode("utf-8")
+            messageLen = struct.unpack("<H", recvall(Client, 2))[0]
+            message = recvall(Client, messageLen).decode("utf-8")
             print(f"{message} message bytes: {messageLen}")
             parts = message.split('|')
             if(parts[0] == "server"):
@@ -153,8 +154,10 @@ def send(msg):
     and the message
     """
     try:
-        Client.sendall(struct.pack("<H",len(msg)))
-        Client.sendall(msg.encode("utf-8"))
+        with sendLock:
+            data = msg.encode("utf-8")
+            Client.sendall(struct.pack("<H", len(data)))
+            Client.sendall(data)
     except Exception as e:
         print(e)
         print("\nDisconected from server in send Message")
@@ -171,17 +174,23 @@ def sendFile(Filename,fileMess):
     """
     filesize = os.path.getsize(Filename)
     try:
-        Client.sendall(struct.pack("<H",len(fileMess)))
-        Client.sendall(fileMess.encode("utf-8"))
-        
-        Client.sendall(struct.pack("<H",len(Filename)))
-        Client.sendall(Filename.encode("utf-8"))
-        Client.sendall(struct.pack("<Q",filesize))
-        
-        with open(Filename,"rb") as f:
-            while line := f.read(1024):
-                Client.sendall(line)
-        
+        with sendLock:
+            data = fileMess.encode("utf-8")
+
+            Client.sendall(struct.pack("<H", len(data)))
+            Client.sendall(data)
+
+            filenameData = Filename.encode("utf-8")
+
+            Client.sendall(struct.pack("<H", len(filenameData)))
+            Client.sendall(filenameData)
+
+            Client.sendall(struct.pack("<Q", filesize))
+
+            with open(Filename, "rb") as f:
+                while chunk := f.read(1024):
+                    Client.sendall(chunk)
+            
     except Exception as e:
         print(e)
         print("\nDisconected from server in send File")
@@ -213,7 +222,7 @@ def reciveFile():
     get chunks of 1024 bytes until the filesize
     """
     try:
-        nameSize = struct.unpack("<H",Client.recv(2))[0]
+        nameSize = struct.unpack("<H", recvall(Client, 2))[0]
         Filename = recvall(Client,nameSize).decode("utf-8")
         print("File = ",Filename)
         FileSize = getFileSize(Client)
