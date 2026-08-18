@@ -556,7 +556,8 @@ class Interface:
             
         for k in self.Users.keys():
             user = self.Users[k]
-            user.reciveDMG(int(dmg))
+            if(dest == "ALL" or dest == user.getName()):
+                user.reciveDMG(int(dmg))
 
         if(self.DMUI):
             for i in self.banners:

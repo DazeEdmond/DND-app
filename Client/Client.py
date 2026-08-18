@@ -196,6 +196,7 @@ def sendFile(Filename,fileMess):
     except Exception as e:
         print("ERROR SEND FILE:")
         print(type(e).__name__, e)
+        raise
 
 #############
 ####FILE#####
@@ -230,12 +231,18 @@ def reciveFile():
         FileSize = getFileSize(Client)
         print("FileSize = ",FileSize)
         fileBytes = recvall(Client,FileSize)
+
+        if os.path.exists(Filename):
+            print("File already exists: ",Filename)
+            return
+
         with open(Filename,"wb") as f:
             f.write(fileBytes)
     
     except Exception as e:
         print("Exception in recive File: ")
         print(e)
+        raise
 
 def recvall(client, size):
     data = bytearray()
