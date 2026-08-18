@@ -144,7 +144,7 @@ def reciveMessages(interface):
             interface.changeConected()
             Client.close()
             break
-    print("saliendo")
+    print("Thread end")
 
 def send(msg):
     """
@@ -172,28 +172,30 @@ def sendFile(Filename,fileMess):
     send the file with a code that means how should be trated the file
     read the bytes of the file
     """
-    filesize = os.path.getsize(Filename)
     try:
         with sendLock:
-            data = fileMess.encode("utf-8")
+            filesize = os.path.getsize(Filename)
 
-            Client.sendall(struct.pack("<H", len(data)))
+            # Mensaje de control
+            data = fileMess.encode("utf-8")
+            Client.sendall(struct.pack("<H",len(data)))
             Client.sendall(data)
 
+            # Nombre
             filenameData = Filename.encode("utf-8")
-
-            Client.sendall(struct.pack("<H", len(filenameData)))
+            Client.sendall(struct.pack("<H",len(filenameData)))
             Client.sendall(filenameData)
 
-            Client.sendall(struct.pack("<Q", filesize))
+            # Tamaño
+            Client.sendall(struct.pack("<Q",filesize))
 
             with open(Filename, "rb") as f:
                 while chunk := f.read(1024):
                     Client.sendall(chunk)
-            
+
     except Exception as e:
-        print(e)
-        print("\nDisconected from server in send File")
+        print("ERROR SEND FILE:")
+        print(type(e).__name__, e)
 
 #############
 ####FILE#####
@@ -242,9 +244,7 @@ def recvall(client, size):
         chunk = client.recv(size-len(data))
 
         if not chunk:
-            raise ConnectionError(
-                "Error in recvall"
-            )
+            raise ConnectionError("Error in recvall")
 
         data.extend(chunk)
 
@@ -390,9 +390,9 @@ def main():
                         msg = interface.sendUserDMG()                        
                     elif action == 37:
                         files = interface.sendEnemyFiles()
-                        if(interface.playersIn()):
+                        if interface.playersIn():
                             for f in files:
-                                sendFile(f,"ALL|DM|sndFile-")
+                                sendFile(f, "ALL|DM|sndFile-")
                     elif action == 38:
                         files = interface.sendSoundFiles()
                         if(interface.playersIn()):

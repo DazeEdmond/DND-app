@@ -25,13 +25,13 @@ def sendEveryone(username,msg):
 def send(message, receptor, messager):
     try:
         with clientsLock[receptor]:
-            mess = messager + '|' + message
+            mess = messager+'|'+message
             data = mess.encode("utf-8")
-            clients[receptor].sendall(struct.pack("<H", len(data)))
+            clients[receptor].sendall(struct.pack("<H",len(data)))
             clients[receptor].sendall(data)
 
     except Exception as e:
-        print(receptor + " Left error in send:\n")
+        print(receptor+"Left error in send:\n")
         print(f"{e}")
         clients[receptor].close()
         del clients[receptor]
@@ -117,29 +117,17 @@ def recvFile(Client):
         fileSizeBytes = recvall(Client, 8)
         fileSize = struct.unpack("<Q", fileSizeBytes)[0]
 
-        print("RECVFILE:", filename)
-        print("RECVFILE size:", fileSize)
-
         fileBytes = recvall(Client, fileSize)
 
-        print(
-            "RECVFILE terminado:",
-            len(fileBytes),
-            "/",
-            fileSize
-        )
+        print("Nombre de archivo:",filename)
+        print("Tamaño:",fileSize)
 
-        return (
-            nameSizeBytes,
-            filenameBytes,
-            fileSizeBytes,
-            fileBytes
-        )
+        print("recvFile terminado:",len(fileBytes),"/",fileSize)
 
+        return nameSizeBytes, filenameBytes, fileSizeBytes, fileBytes
     except Exception as e:
-        print("Error in recvFile:")
-        print(type(e).__name__, e)
-        raise
+        print("Error in recvFile")
+        print(type(e).__name__," ", e)
 
 def sendFile(fileData,Reciver,reciverName):
     try:
@@ -171,14 +159,12 @@ def recvall(client, size):
     data = bytearray()
 
     while len(data) < size:
-        chunk = client.recv(size - len(data))
+        chunk = client.recv(size-len(data))
 
         if not chunk:
             raise ConnectionError("Error in recvall")
 
         data.extend(chunk)
-
-        print("RECV:", len(data), "/", size)
 
     return data
 
