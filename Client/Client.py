@@ -7,6 +7,7 @@ import pygame as pg
 import pickle as pkl
 from Pages import Menu
 from Pages import Interface
+from Users import DM
 
 #############
 ####GLOBAL###
@@ -16,16 +17,15 @@ from Pages import Interface
 ########
 ####
 
-Host = "192.168.100.26"
+Host = "146.235.214.14"
 Port = 5000
 Username = ""
 Client = ""
-
+sendLock = t.Lock()
 
 ####
 ########
 ###########
-
 
 #############
 ##CONECTION##
@@ -69,9 +69,9 @@ def reciveMessages(interface):
     """
     while True:
         try:
-            messageLen = struct.unpack("<H",Client.recv(2))[0]
-            message = Client.recv(messageLen).decode("utf-8")
-            print(f"{message}")
+            messageLen = struct.unpack("<H", recvall(Client, 2))[0]
+            message = recvall(Client, messageLen).decode("utf-8")
+            print(f"{message} message bytes: {messageLen}")
             parts = message.split('|')
             if(parts[0] == "server"):
                 if '&' in parts[1]:
@@ -82,49 +82,70 @@ def reciveMessages(interface):
                 elif "=" in parts[1]:
                     interface.appendADV(parts[1])
                 elif "getADV" in parts[1]:
+                    dest = parts[1].split(",")[1]
                     adv = interface.getUser()
-                    send(parts[1].split(",")[1]+"|server|"+adv.getSelf())
+                    pfp = adv.getProfPic()
+                    if(pfp != "Images\\sampleUser.png"):
+                        sendFile(pfp,dest+"|DM|sndFile-")
+                    send(dest+"|server|"+adv.getSelf())
                 elif parts[1]=="Invalid Username":
                     interface.changeConected()
             elif '#' in parts[1]:
                 interface.throwDice(message)
+            elif '-' in parts[1]:
+                command = parts[1].split('-')
+                if(command[0] == "sound"):
+                    interface.playSound(command[1])
+                if(command[0] == "music"):
+                    interface.playMusic(command[1])
+                if(command[0] == "musicS"):
+                    interface.stopMusic()
+                if(command[0] == "enemy"):
+                    attributes = command[1].split('$')
+                    name = attributes[0]
+                    hp = attributes[1]
+                    atq = attributes[2]
+                    pfp = attributes[3]
+                    theme = attributes[4]
+                    interface.spawnEnemy((920,5),(300,300),name,hp,atq,pfp,theme)
+                if(command[0] == "enemyS"):
+                    interface.escapeEnemy()
+                if(command[0] == "enemyDMG"):
+                    interface.DMGEnemy(command[1])
+                if(command[0] == "enemyHeal"):
+                    interface.healEnemy(command[1])
+                if(command[0] == "charge"):
+                    attributes = command[1].split('$')
+                    interface.chargeUser(attributes)
+                if(command[0] == "change"):
+                    attributes = command[1].split('$')
+                    interface.changeUser(attributes)
+                if(command[0] == "turn"):
+                    if(command[1] == Username):
+                        interface.setTurn(True)
+                if(command[0] == "usrDMG"):
+                    attributes = command[1].split('$')
+                    interface.reciveDamage(attributes[0],attributes[1])
+                if(command[0] == "sndFile"):
+                    print("recived File")
+                    reciveFile()
             else:
                 interface.appendMSG(message)
-            #if(message.split('|')[1] == "SeNDFiLe"):
-            #    print("recived File")
-            #    reciveFile()
+
 
         except ConnectionAbortedError:
             print("disconected")
+            interface.changeConected()
             Client.close()
             break
         except Exception as e:
             print(e)
             print("\nDisconected from server in recive Message")
+            interface.changeConected()
             Client.close()
             break
-'''
-def sendMessages():
-    """
-    send a message to the server with the info of
-    who should recive the message
-    who sent it
-    and the message
-    """
-    while True:
-        try:
-            message = input("Write: ")
-            if(message == "file"):
-                sendFile("pblock.jpg")
-            else:
-                Client.sendall(struct.pack("<H",len(message)))
-                Client.sendall(message.encode("utf-8"))
-        except Exception as e:
-            print(e)
-            print("\nDisconected from server in send Message")
-            Client.close()
-            break
-'''
+    print("Thread end")
+
 def send(msg):
     """
     send a message to the server with the info of
@@ -133,36 +154,49 @@ def send(msg):
     and the message
     """
     try:
-        Client.sendall(struct.pack("<H",len(msg)))
-        Client.sendall(msg.encode("utf-8"))
+        with sendLock:
+            data = msg.encode("utf-8")
+            Client.sendall(struct.pack("<H", len(data)))
+            Client.sendall(data)
     except Exception as e:
         print(e)
         print("\nDisconected from server in send Message")
         Client.close()
 
 
-def sendFile(Filename):
+def sendFile(Filename,fileMess):
     """
+    fileMess = receptor|sender|sndFile-
+
     send a code to the server that describe to who should be
     send the file with a code that means how should be trated the file
     read the bytes of the file
     """
-    filesize = os.path.getsize(Filename)
     try:
-        filemess = "AtunValido2|AtunValido|SeNDFiLe"
-        Client.sendall(struct.pack("<H",len(filemess)))
-        Client.sendall(filemess.encode("utf-8"))
-        
-        Client.sendall(struct.pack("<H",len("Prueba.jpg")))
-        Client.sendall("Prueba.jpg".encode("utf-8"))
-        Client.sendall(struct.pack("<Q",filesize))
-        
-        with open(Filename,"rb") as f:
-            while line := f.read(1024):
-                Client.sendall(line)
-        
+        with sendLock:
+            filesize = os.path.getsize(Filename)
+
+            # Mensaje de control
+            data = fileMess.encode("utf-8")
+            Client.sendall(struct.pack("<H",len(data)))
+            Client.sendall(data)
+
+            # Nombre
+            filenameData = Filename.encode("utf-8")
+            Client.sendall(struct.pack("<H",len(filenameData)))
+            Client.sendall(filenameData)
+
+            # Tamaño
+            Client.sendall(struct.pack("<Q",filesize))
+
+            with open(Filename, "rb") as f:
+                while chunk := f.read(1024):
+                    Client.sendall(chunk)
+
     except Exception as e:
-        print(e)
+        print("ERROR SEND FILE:")
+        print(type(e).__name__, e)
+        raise
 
 #############
 ####FILE#####
@@ -175,15 +209,10 @@ def getFileSize(Client):
     return the size of the file as INT
     """
     try:
-        expectedBytes = struct.calcsize("<Q")
-        recivedBytes = 0
-        stream = bytes()
-        while recivedBytes < expectedBytes:
-            chunk = Client.recv(expectedBytes-recivedBytes)
-            stream += chunk
-            recivedBytes += len(chunk)
-        filesize = struct.unpack("<Q",stream)[0]
-        return filesize
+        data = recvall(Client,struct.calcsize("<Q"))
+
+        return struct.unpack("<Q",data)[0]
+
     except Exception as e:
         print("Exception in recive FileSize: ")
         print(e)
@@ -196,36 +225,41 @@ def reciveFile():
     get chunks of 1024 bytes until the filesize
     """
     try:
-        nameSize = struct.unpack("<H",Client.recv(2))[0]
-        Filename = Client.recv(nameSize).decode("utf-8")
+        nameSize = struct.unpack("<H", recvall(Client, 2))[0]
+        Filename = recvall(Client,nameSize).decode("utf-8")
         print("File = ",Filename)
         FileSize = getFileSize(Client)
         print("FileSize = ",FileSize)
+        fileBytes = recvall(Client,FileSize)
+
+        if os.path.exists(Filename):
+            print("File already exists: ",Filename)
+            return
+
         with open(Filename,"wb") as f:
-            receivedBytes = 0
-            while receivedBytes < FileSize:
-                chunk = Client.recv(1024)
-                if(chunk):
-                    f.write(chunk)
-                    receivedBytes += len(chunk)
+            f.write(fileBytes)
+    
     except Exception as e:
         print("Exception in recive File: ")
         print(e)
+        raise
 
-        
-#startConection()
+def recvall(client, size):
+    data = bytearray()
+
+    while len(data) < size:
+        chunk = client.recv(size-len(data))
+
+        if not chunk:
+            raise ConnectionError("Error in recvall")
+
+        data.extend(chunk)
+
+    return data
 
 #############
 ####PYGAME###
 #############
-
-def getCollision(x,y,xs,ys,xc,yc,click=False):
-    if(click):
-        xc,yc = pg.mouse.get_pos()
-    if xc > x and xc < x+xs and yc > y and yc < y+ys:
-        return True
-    return False
-
 
 def loadWindow(window,display,size):
     """
@@ -241,8 +275,10 @@ def main():
     """
     Start pygame and show the app interface
     """
-    
+
     pg.init()
+    pg.mixer.init()
+    pg.mixer.music.set_volume(0.2)
     windowSize = (1280,720)
     window = pg.Surface(windowSize)
     display = pg.display.set_mode(windowSize)
@@ -278,6 +314,13 @@ def main():
                     conecting = False
                     game = False
                     running = False
+
+                if et == pg.KEYDOWN:
+                    if e.key == pg.K_RIGHT:
+                        menu.moveUsers('R')
+                    if e.key == pg.K_LEFT:
+                        menu.moveUsers('L')
+                
                 if et == pg.MOUSEBUTTONDOWN:
                     action = menu.getClickedOnes(x,y)
                     print("tuki?",action)
@@ -289,7 +332,6 @@ def main():
                         ME = menu.getSelectedUser()
                         interface.setUser(ME)
                         Username = ME.getName()
-                        print(Username)
                         login = False
                         conecting = True
 
@@ -313,13 +355,17 @@ def main():
                 if not flag:
                     login = True
                     unableToConect = True
-
+                else:
+                    game = True
                 conecting = False
 
             loadWindow(window,display,windowSize)
             clock.tick(50)
 
-            
+        if(type(ME) == DM):
+            interface.setDMUI(True)
+            interface.setDMUIInterface()
+
         while game:
             x,y = pg.mouse.get_pos()
 
@@ -334,34 +380,78 @@ def main():
                 if et == pg.MOUSEBUTTONDOWN:
                     action = interface.getClickedOnes(x,y)
                     print("tuki?",action)
+                    msg = ""
                     if action == 1: #start reading text
                         TXTng = True
                     elif action == 2: #stop reading texxt
                         TXTng = False
-                    elif action in dice:
+                    elif action == 31:
+                        msg = interface.sendEnemy()
+                    elif action == 32:
+                        msg = interface.sendEnemyS()
+                    elif action == 34:
+                        msg = interface.sendEnemyAttack()
+                    elif action == 35:
+                        msg = interface.sendEnemyHeal()
+                    elif action == 36:
+                        msg = interface.sendUserDMG()                        
+                    elif action == 37:
+                        files = interface.sendEnemyFiles()
+                        if interface.playersIn():
+                            for f in files:
+                                sendFile(f, "ALL|DM|sndFile-")
+                    elif action == 38:
+                        files = interface.sendSoundFiles()
+                        if(interface.playersIn()):
+                            for f in files:
+                                sendFile(f,"ALL|DM|sndFile-")
+                    elif action == 41:
+                        msg = interface.sendMusic()
+                    elif action == 42:
+                        msg = interface.sendMusicStop()
+                    elif action == 43:
+                        msg = interface.sendSound()
+                    elif action == 51:
+                        msg = interface.sendCharge()
+                    elif action == 52:
+                        msg = interface.sendChange()
+                    elif action == 62:
+                        msg = interface.sendTurn()
+
+                    elif action in dice: #throw a dice
                         num = randint(1,action)
-                        print(num)
-                        interface.throwDice("|"+str(action)+"#"+str(num),True)
-                        msg = "ALL|"+Username+"|"+str(action)+"#"+str(num)
+                        if(interface.getMode()=="Attack" and interface.onBattle()):
+                            interface.throwDice("|"+str(action)+"#"+str(num)+"#Attack#"+str(ME.getATQ()),True)
+                            msg = "ALL|"+Username+"|"+str(action)+"#"+str(num)+"#Attack#"+str(ME.getATQ())
+                        elif(interface.getMode()=="Action"):
+                            interface.throwDice("|"+str(action)+"#"+str(num)+"#Action",True)
+                            msg = "ALL|"+Username+"|"+str(action)+"#"+str(num)+"#Action"
+
+                    if(msg != ""):
                         send(msg)
 
                 if TXTng:
                     if et == pg.KEYDOWN:
                         if e.key == pg.K_BACKSPACE:
                             interface.write("°")
-                        elif e.key == pg.K_RETURN:
+                        elif e.key == pg.K_RETURN and interface.getMsgFieldSelected():
                             msg = interface.sendMessage()
-                            print(msg)
                             if msg != "":
                                 send(msg)
                         else:
                             interface.write(e.unicode)
             
-            interface.loadGame()
-            if not interface.getConected:
+            if not interface.getConected():
                 login = True
                 conecting = False
                 game = False
+                unableToConect = False
+                menu.showError("Server Disconected")
+                interface.resetInterface()
+                continue
+            else: 
+                interface.loadGame()
+
 
             loadWindow(window,display,windowSize)
             clock.tick(50)
