@@ -4,8 +4,9 @@ import random
 import pickle as pkl
 import os
 import shutil
-from Utilities import BTN,Dialog,Image,FileDialog,TXTField,ComboBox,Dice,UserBanner,DMUserBanner,Enemy
+from Utilities import BTN,Dialog,Image,FileDialog,TXTField,ComboBox,Dice,UserBanner,DMUserBanner
 from Utilities import Green,Red,White,Black,LightGray,Gray,Yellow
+from Minigames import Enemy,TextDialog
 from Users import DM
 
 #####################################################################
