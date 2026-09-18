@@ -4,7 +4,7 @@ import random
 import pickle as pkl
 import os
 import shutil
-from Utilities import BTN,Dialog,Image,FileDialog,TXTField,ComboBox,Dice,UserBanner,DMUserBanner
+from Utilities import BTN,Dialog,Image,FileDialog,TXTField,ComboBox,Dice,UserBanner,DMUserBanner,GroupOfItems
 from Utilities import Green,Red,White,Black,LightGray,Gray,Yellow
 from Minigames import Enemy,TextDialog
 from Users import DM
@@ -248,6 +248,7 @@ class Interface:
         self.Users = {}
         self.msgs = []
         self.screenItems = []
+        self.GroupItems = []
         self.Enemy = []
         self.banner = ""
         self.banners = []
@@ -328,21 +329,25 @@ class Interface:
         
     def setDMUIInterface(self):
         self.screenItems.clear()
+        self.GroupItems.clear()
+
+        self.GroupItems.append(GroupOfItems(self.W,(170,470),(280,10),(120,120),(600,700),self.font,"Images\\sampleUser.png",color=Gray))#Group 0
+
         self.screenItems.append(TXTField(self.W,(170,320),(600,50),self.font,White,Black))
         self.selectedTXTField = self.screenItems[0]
         self.screenItems.append(ComboBox(self.W,(170,380),(200,50),self.font,White,Black))
         self.screenItems[1].setItems(["ALL"])
-        self.screenItems.append(Image(self.W,(170,470),(120,120),self.font,"Images\\sampleUser.png"))#item 2
-        self.screenItems.append(FileDialog(self.W,(170,600),(120,45),self.font,"Find a picture :p",
+        self.screenItems.append(Image(self.W,(300,30),(120,120),self.font,"Images\\sampleUser.png",GroupIndex=0,visible=False))#item 2
+        self.screenItems.append(FileDialog(self.W,(300,160),(120,45),self.font,"Find a picture :p",
                                            (("PNG","*.png"),("JPG","*.jpg"),("All Files","*.*")),"Profile",
-                                           self.screenItems[-1],(224,224,35)))#item3
-        self.screenItems.append(TXTField(self.W,(405,465),(200,45),self.font,White,Black))#item 4
-        self.screenItems.append(TXTField(self.W,(405,510),(200,45),self.font,White,Black,AC="1234567890"))#item 5
-        self.screenItems.append(TXTField(self.W,(405,555),(200,45),self.font,White,Black,AC="1234567890"))#item 6
-        self.screenItems.append(TXTField(self.W,(405,600),(200,45),self.font,White,Black,canWrite=False))#item 7
-        self.screenItems.append(FileDialog(self.W,(295,600),(115,45),self.font,"Find a theme",
+                                           self.screenItems[-1],(224,224,35),GroupIndex=0,visible=False))#item3
+        self.screenItems.append(TXTField(self.W,(535,30),(200,45),self.font,White,Black,GroupIndex=0,visible=False))#item 4
+        self.screenItems.append(TXTField(self.W,(535,75),(200,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 5
+        self.screenItems.append(TXTField(self.W,(535,120),(200,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 6
+        self.screenItems.append(TXTField(self.W,(535,165),(200,45),self.font,White,Black,canWrite=False,GroupIndex=0,visible=False))#item 7
+        self.screenItems.append(FileDialog(self.W,(535,210),(115,45),self.font,"Find a theme",
                                            (("All","*.*"),("mp3","*.mp3")),"Theme",
-                                           self.screenItems[-1],(224,224,35)))#item 8
+                                           self.screenItems[-1],(224,224,35),GroupIndex=0,visible=False))#item 8
         self.screenItems.append(BTN(self.W,(615,465),(155,55),self.font,31,"Send",Green))#item 9
         self.screenItems.append(BTN(self.W,(615,527),(155,55),self.font,32,"Stop",Red))#item 10
         self.screenItems.append(BTN(self.W,(615,589),(155,55),self.font,33,"Clear",LightGray))#item 11
@@ -366,7 +371,7 @@ class Interface:
         self.screenItems.append(BTN(self.W,(315,380),(100,50),self.font,36,"Attack",Red))#item 24
         self.screenItems.append(BTN(self.W,(170,650),(250,50),self.font,37,"Send enemy Files",Yellow))#item 24
         self.screenItems.append(BTN(self.W,(430,650),(250,50),self.font,38,"Send sound Files",Yellow))#item 24
-
+        
     def write(self,key):
         self.selectedTXTField.write(key)
 
@@ -684,8 +689,11 @@ class Interface:
         if(self.Enemy != []):
             self.Enemy[0].render()
 
+        extraItems = []
         for i in self.screenItems:
             i.render()
+            if(i.getGroup() != ""):
+                extraItems.append(i)
 
         self.loadMSGS()
 
@@ -709,6 +717,14 @@ class Interface:
 
         if(self.selectedCBox):
             self.selectedCombo.showItems()
+
+        for GI in self.GroupItems:
+            GI.render()
+        for GI in range(len(self.GroupItems)):
+            for i in extraItems:
+                if(i.getGroup() == GI):
+                    i.setVisible(self.GroupItems[GI].OnGroup())
+                    i.render()
 
         self.banner.render((15,15))
         for i in range(0,len(self.banners)):

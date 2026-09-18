@@ -24,7 +24,7 @@ Yellow = (204,204,35)
 
 #FieldTool
 class FieldTool:
-    def __init__(self,window,pos,size,font,color,fontColor,textPos,selectable=False,text=""):
+    def __init__(self,window,pos,size,font,color,fontColor,textPos,selectable=False,text="",GroupIndex="",visible=True):
         self.W = window
         self.pos = pos
         self.size = size
@@ -35,12 +35,22 @@ class FieldTool:
         self.ACTcolor = color
         self.fontColor = fontColor
         self.selectable = selectable
+        self.GroupIndex = GroupIndex
+        self.visible = visible
     
     def centerText(self):
         text_surface = self.font.render(self.text, True, self.fontColor)
         self.textPos = (self.pos[0]+(self.size[0]-text_surface.get_width())//2,self.pos[1]+(self.size[1]-self.font.get_height())//2)
 
+    def getGroup(self):
+        return self.GroupIndex
+
+    def setVisible(self,state):
+        self.visible = state
+
     def render(self):
+        if(not self.visible):
+            return
         self.ACTcolor = self.color
         if(self.selectable and getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)):
             self.ACTcolor = (min(self.color[0]+30,255),
@@ -82,8 +92,8 @@ class Dialog(FieldTool):
 
 #class image
 class Image(FieldTool):
-    def __init__(self,window,pos,size,font,imagePath,color=Black,fontColor=(255,255,255),evt=-1):
-        super().__init__(window,pos,size,font,color,fontColor,pos)
+    def __init__(self,window,pos,size,font,imagePath,color=Black,fontColor=(255,255,255),evt=-1,GroupIndex="",visible=True):
+        super().__init__(window,pos,size,font,color,fontColor,pos,GroupIndex=GroupIndex,visible=visible)
         self.path = imagePath
         try:
             self.image = pg.image.load(self.path)
@@ -96,6 +106,8 @@ class Image(FieldTool):
         return self.path
 
     def render(self):
+        if(not self.visible):
+            return
         self.W.blit(self.image,self.pos)
 
     def setPath(self,path):
@@ -105,38 +117,40 @@ class Image(FieldTool):
             self.image = pg.transform.scale(self.image,self.size)
 
     def isClicked(self,x,y):
-        if(getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y)):
+        if(self.visible and getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y)):
             return self.evt
         return -1
 
 #class FileDialog
 class FileDialog(FieldTool):
-    def __init__(self,window,pos,size,font,title,types,text,dest,color=Black,fontColor=(255,255,255)):
+    def __init__(self,window,pos,size,font,title,types,text,dest,color=Black,fontColor=(255,255,255),GroupIndex="",visible=True):
         super().__init__(window,pos,size,font,color,fontColor,(((size[0]/2)-len(text)*6)/2+pos[0],
                                                                             (size[1]/2)-27+pos[1]),
-                                                                             True,text)
+                                                                             True,text,GroupIndex=GroupIndex,visible=visible)
         self.path = ""
         self.dest = dest
         self.title = title
         self.types = types
 
     def isClicked(self,x,y):
-        if(getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y)):
+        if(self.visible and getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y)):
             self.path = tkfd.askopenfilename(title=self.title,filetypes=self.types)
             self.dest.setPath(self.path)
         return -1
     
 #class BTN
 class BTN(FieldTool):
-    def __init__(self,window,pos,size,font,action,text,color=Black,fontColor=(255,255,255),enabled=True,disabledColor=(150,150,150)):
+    def __init__(self,window,pos,size,font,action,text,color=Black,fontColor=(255,255,255),enabled=True,disabledColor=(150,150,150),GroupIndex="",visible=True):
         text_surface = font.render(text, True, fontColor)
         super().__init__(window,pos,size,font,color,fontColor,(pos[0]+(size[0]-text_surface.get_width())//2,pos[1]+(size[1]-font.get_height())//2),
-                                                                             True,text)
+                                                                             True,text,GroupIndex=GroupIndex,visible=visible)
         self.action = action
         self.enabled = enabled
         self.disabledColor = disabledColor
 
     def render(self):
+        if(not self.visible):
+            return
         if(self.enabled):
             self.ACTcolor = self.color
             if(self.selectable and getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)):
@@ -154,7 +168,7 @@ class BTN(FieldTool):
 
 
     def isClicked(self,x,y):
-        if(getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y) and self.enabled):
+        if(self.visible and getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y) and self.enabled):
             return self.action
         return -1
 
@@ -163,9 +177,9 @@ class BTN(FieldTool):
         
 #class TextField():
 class TXTField(FieldTool):
-    def __init__(self,window,pos,size,font,color=Black,fontColor=(255,255,255),AC="ABCDEFGHIJKLMNOPQRSTUVWXYZ ",canWrite=True):
+    def __init__(self,window,pos,size,font,color=Black,fontColor=(255,255,255),AC="ABCDEFGHIJKLMNOPQRSTUVWXYZ ",canWrite=True,GroupIndex="",visible=True):
         text_surface = font.render(" ", True, fontColor)
-        super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,pos[1]+(size[1]-font.get_height())//2),True)
+        super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,pos[1]+(size[1]-font.get_height())//2),True,GroupIndex=GroupIndex,visible=visible)
         self.selected = False
         self.action = (1,2)
         self.allowedChars = AC
@@ -187,6 +201,8 @@ class TXTField(FieldTool):
         return empty
 
     def isClicked(self,x,y):
+        if(not self.visible):
+            return -1
         flag = getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y)
         if(not self.canWrite):
             return -1
@@ -215,8 +231,8 @@ class TXTField(FieldTool):
 
 #class comboBox
 class ComboBox(FieldTool):
-    def __init__(self,window,pos,size,font,color=Black,fontColor=(255,255,255),action=3):
-        super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,(size[1]/2)-27+pos[1]),True,"None")
+    def __init__(self,window,pos,size,font,color=Black,fontColor=(255,255,255),action=3,GroupIndex="",visible=True):
+        super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,(size[1]/2)-27+pos[1]),True,"None",GroupIndex=GroupIndex,visible=visible)
         self.items = ["None"]
         self.selectedItem = 0
         self.selected = False
@@ -226,6 +242,8 @@ class ComboBox(FieldTool):
         return self.items[self.selectedItem]
 
     def isClicked(self,x,y):
+        if(not self.visible):
+            return -1
         flag = getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],x,y)
         if flag:
             self.selected = True
@@ -250,6 +268,8 @@ class ComboBox(FieldTool):
         self.items.remove(item)
 
     def showItems(self):
+        if(not self.visible):
+            return
         YItemPos = self.pos[1] + self.size[1]
         YTextPos = self.textPos[1] + self.size[1]
         for i in range(0,len(self.items)):
@@ -263,6 +283,8 @@ class ComboBox(FieldTool):
             self.W.blit(nameText,(self.textPos[0],YTextPos+i*self.size[1]))
 
     def getItemClick(self,x,y):
+        if(not self.visible):
+            return 0
         self.selected = False
         for i in range(0,len(self.items)+1):
             if(getCollision(self.pos[0],self.pos[1]+i*self.size[1],self.size[0],self.size[1],x,y)):
@@ -277,8 +299,8 @@ class ComboBox(FieldTool):
         
 #class Dice
 class Dice(FieldTool):
-    def __init__(self,window,pos,size,font,path,time,speed,Slist,color=Black,fontColor=(255,255,255),defnum=6):
-        super().__init__(window,pos,size,font,color,fontColor,(0,0),True)
+    def __init__(self,window,pos,size,font,path,time,speed,Slist,color=Black,fontColor=(255,255,255),defnum=6,GroupIndex="",visible=True):
+        super().__init__(window,pos,size,font,color,fontColor,(0,0),True,GroupIndex=GroupIndex,visible=visible)
         self.time = time
         self.number = defnum
         self.numberCount = time+30
@@ -290,6 +312,8 @@ class Dice(FieldTool):
         self.image = pg.transform.scale(self.image,size)
 
     def render(self):
+        if(not self.visible):
+            return
         self.W.blit(self.image,self.pos)
 
         self.count+=1
@@ -315,8 +339,8 @@ class Dice(FieldTool):
 
 #class UserBanner
 class UserBanner(FieldTool):
-    def __init__(self,window,pos,font,secondFont,imagePath,color=Black,fontColor=(255,255,255),User="",showed=False):
-        super().__init__(window,pos,(110,110),font,color,fontColor,pos)
+    def __init__(self,window,pos,font,secondFont,imagePath,color=Black,fontColor=(255,255,255),User="",showed=False,GroupIndex="",visible=True):
+        super().__init__(window,pos,(110,110),font,color,fontColor,pos,GroupIndex=GroupIndex,visible=visible)
         self.secondFont = secondFont
         self.path = imagePath
         try:
@@ -337,6 +361,8 @@ class UserBanner(FieldTool):
         return self.path
 
     def render(self,pos):
+        if(not self.visible):
+            return
         self.pos = pos
         self.imagePos = (pos[0]+10,pos[1]+10)
         if (self.showed or getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)) or \
@@ -389,8 +415,8 @@ class UserBanner(FieldTool):
 
 #class DMUsersBanner
 class DMUserBanner(FieldTool):
-    def __init__(self,window,pos,font,secondFont,imagePath,color=Black,fontColor=(255,255,255),User="",showed=False):
-        super().__init__(window,pos,(110,110),font,color,fontColor,pos)
+    def __init__(self,window,pos,font,secondFont,imagePath,color=Black,fontColor=(255,255,255),User="",showed=False,GroupIndex="",visible=True):
+        super().__init__(window,pos,(110,110),font,color,fontColor,pos,GroupIndex=GroupIndex,visible=visible)
         self.secondFont = secondFont
         self.path = imagePath
         try:
@@ -451,6 +477,8 @@ class DMUserBanner(FieldTool):
         self.items[4].setPath(str(self.User.getCharisma()))
 
     def render(self,pos):
+        if(not self.visible):
+            return
         self.pos = pos
         if (self.showed or getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)) or \
            (self.showing and (getCollision(self.pos[0],self.pos[1],self.size[0]+685,self.size[1],0,0,True))):
@@ -499,6 +527,8 @@ class DMUserBanner(FieldTool):
 
     
     def isClicked(self,x,y):
+        if(not self.visible):
+            return
         if(self.showing):
             actions = []
             for i in self.items:
@@ -550,3 +580,46 @@ class DMUserBanner(FieldTool):
         self.selectedTXTField.write(key)
         if self.selectedTXTField.getResult() == "":
             self.selectedTXTField.write("0")
+
+#class GroupOfItems
+class GroupOfItems(FieldTool):
+    def __init__(self,window,pos,posSelected,size,sizeSelected,font,imagePath,color=Black,fontColor=(255,255,255),showed=False):
+        super().__init__(window,pos,(110,110),font,color,fontColor,pos)
+        self.sizeSelected = sizeSelected
+        self.posSelected = posSelected
+        self.path = imagePath
+        try:
+            self.image = pg.image.load(self.path)
+        except FileNotFoundError:
+            self.image = pg.image.load("Images\\sampleUser.png")
+        self.image = pg.transform.scale(self.image,(self.size[0]-20,self.size[1]-20))
+        self.imagePos = (self.pos[0]+10,self.pos[1]+10)
+        self.showed = showed
+        self.showing = False
+
+    def getResult(self):
+        return self.path
+
+    def OnGroup(self):
+        return (self.showed or getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)) or \
+           (self.showing and (getCollision(self.posSelected[0],self.posSelected[1],self.sizeSelected[0],self.sizeSelected[1],0,0,True)))
+
+    def render(self):
+        self.imagePos = (self.pos[0]+10,self.pos[1]+10)
+        if (self.showed or getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)) or \
+           (self.showing and (getCollision(self.posSelected[0],self.posSelected[1],self.sizeSelected[0],self.sizeSelected[1],0,0,True))):
+            pg.draw.rect(self.W,self.color,(self.posSelected[0],self.posSelected[1],self.sizeSelected[0],self.sizeSelected[1]),border_radius=20)
+
+            self.showing = True
+        else:
+            self.showing = False
+
+        pg.draw.rect(self.W,self.color,(self.pos[0],self.pos[1],self.size[0],self.size[1]),border_radius=20)
+        self.W.blit(self.image,self.imagePos)
+        
+
+    def setPath(self,path):
+        if(path!=''):
+            self.path = path
+            self.image = pg.image.load(self.path)
+            self.image = pg.transform.scale(self.image,self.size)
