@@ -337,9 +337,12 @@ class Interface:
         self.screenItems.clear()
         self.GroupItems.clear()
 
+        #Groups of Items
         self.GroupItems.append(GroupOfItems(self.W,"Battle",(180,425),(170,470),(280,10),(120,120),(800,700),self.font,"Images\\sampleUser.png",color=Gray))#Group 0
         self.GroupItems.append(GroupOfItems(self.W,"OST",(345,425),(320,470),(430,10),(120,120),(790,700),self.font,"Images\\sampleUser.png",color=Gray))#Group 1
+        self.GroupItems.append(GroupOfItems(self.W,"Text",(490,425),(470,470),(580,10),(120,120),(690,700),self.font,"Images\\sampleUser.png",color=Gray))#Group 2
 
+        #Screen Items
         self.screenItems.append(TXTField(self.W,(170,320),(600,50),self.font,White,Black))#item 0
         self.selectedTXTField = self.screenItems[0]
         self.screenItems.append(ComboBox(self.W,(170,380),(200,50),self.font,White,Black))#item 1
@@ -358,27 +361,29 @@ class Interface:
         self.screenItems.append(BTN(self.W,(755,645),(90,55),self.font,31,"Send",Green,GroupIndex=0,visible=False))#item 9
         self.screenItems.append(BTN(self.W,(660,645),(90,55),self.font,32,"Stop",Red,GroupIndex=0,visible=False))#item 10
         self.screenItems.append(BTN(self.W,(565,645),(90,55),self.font,33,"Clear",LightGray,GroupIndex=0,visible=False))#item 11
-        self.screenItems.append(BTN(self.W,(470,645),(90,55),self.font,39,"Save",Yellow,GroupIndex=0,visible=False))#item 12
 
-        self.screenItems.append(TXTField(self.W,(540,20),(280,45),self.font,White,Black,canWrite=False,GroupIndex=1,visible=False))#item 13
+        self.screenItems.append(TXTField(self.W,(540,20),(280,45),self.font,White,Black,canWrite=False,GroupIndex=1,visible=False))#item 12
         self.screenItems.append(FileDialog(self.W,(440,20),(95,45),self.font,"Find Music",
                                            (("All","*.*"),("mp3","*.mp3")),"Music",
-                                           self.screenItems[-1],(224,224,35),GroupIndex=1,visible=False))#item 14
-        self.screenItems.append(BTN(self.W,(440,75),(380,40),self.font,41,"Play",Green,GroupIndex=1,visible=False))#item 15
-        self.screenItems.append(BTN(self.W,(440,120),(380,40),self.font,42,"Stop",Red,GroupIndex=1,visible=False))#item 16
-        self.screenItems.append(TXTField(self.W,(930,20),(280,45),self.font,White,Black,canWrite=False,GroupIndex=1,visible=False))#item 17
+                                           self.screenItems[-1],(224,224,35),GroupIndex=1,visible=False))#item 13
+        self.screenItems.append(BTN(self.W,(440,75),(380,40),self.font,41,"Play",Green,GroupIndex=1,visible=False))#item 14
+        self.screenItems.append(BTN(self.W,(440,120),(380,40),self.font,42,"Stop",Red,GroupIndex=1,visible=False))#item 15
+        self.screenItems.append(TXTField(self.W,(930,20),(280,45),self.font,White,Black,canWrite=False,GroupIndex=1,visible=False))#item 16
         self.screenItems.append(FileDialog(self.W,(830,20),(95,45),self.font,"Find Sound",
                                            (("All","*.*"),("mp3","*.mp3")),"Sound",
-                                           self.screenItems[-1],(224,224,35),GroupIndex=1,visible=False))#item 18
-        self.screenItems.append(BTN(self.W,(830,75),(380,40),self.font,43,"Play",Green,GroupIndex=1,visible=False))#item 19
-        self.screenItems.append(BTN(self.W,(830,120),(380,40),self.font,44,"Clear",LightGray,GroupIndex=1,visible=False))#item 20
-        self.screenItems.append(TXTField(self.W,(755,55),(90,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 21
-        self.screenItems.append(BTN(self.W,(755,105),(90,40),self.font,34,"DMG",Green,GroupIndex=0,visible=False))#item 22
-        self.screenItems.append(TXTField(self.W,(755,180),(90,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 23
-        self.screenItems.append(BTN(self.W,(755,230),(90,40),self.font,35,"Heal",Green,GroupIndex=0,visible=False))#item 24
-        self.screenItems.append(BTN(self.W,(315,380),(100,50),self.font,36,"Attack",Red))#item 25
-        self.screenItems.append(BTN(self.W,(170,650),(250,50),self.font,37,"Send enemy Files",Yellow))#item 26
-        self.screenItems.append(BTN(self.W,(430,650),(250,50),self.font,38,"Send sound Files",Yellow))#item 27
+                                           self.screenItems[-1],(224,224,35),GroupIndex=1,visible=False))#item 17
+        self.screenItems.append(BTN(self.W,(830,75),(380,40),self.font,43,"Play",Green,GroupIndex=1,visible=False))#item 18
+        self.screenItems.append(BTN(self.W,(830,120),(380,40),self.font,44,"Clear",LightGray,GroupIndex=1,visible=False))#item 19
+        self.screenItems.append(TXTField(self.W,(755,55),(90,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 20
+        self.screenItems.append(BTN(self.W,(755,105),(90,40),self.font,34,"DMG",Green,GroupIndex=0,visible=False))#item 21
+        self.screenItems.append(TXTField(self.W,(755,180),(90,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 22
+        self.screenItems.append(BTN(self.W,(755,230),(90,40),self.font,35,"Heal",Green,GroupIndex=0,visible=False))#item 23
+        self.screenItems.append(BTN(self.W,(315,380),(100,50),self.font,36,"Attack",Red))#item 24
+        self.screenItems.append(BTN(self.W,(170,650),(250,50),self.font,37,"Send enemy Files",Yellow))#item 25
+        self.screenItems.append(BTN(self.W,(430,650),(250,50),self.font,38,"Send sound Files",Yellow))#item 26
+
+        #Save enemy File WIP
+        self.screenItems.append(BTN(self.W,(470,645),(90,55),self.font,39,"Save",Yellow,GroupIndex=0,visible=False))#item 27
 
     def write(self,key):
         self.selectedTXTField.write(key)
@@ -785,8 +790,8 @@ class Interface:
         
         for i in validClickedItems:
             a = i.isClicked(x,y)
-            action.append(a)
             if(a!=-1):
+                action.append(a)
                 if(self.selectedCBox and self.selectedCombo.collideWItems(x,y)):
                     action = action[:-1]
                 else:

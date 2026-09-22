@@ -24,7 +24,7 @@ Yellow = (204,204,35)
 
 #FieldTool
 class FieldTool:
-    def __init__(self,window,pos,size,font,color,fontColor,textPos,selectable=False,text="",GroupIndex="",visible=True):
+    def __init__(self,window,pos,size,font,color,fontColor,textPos,selectable=False,text="",GroupIndex="",visible=True,wrap = False):
         self.W = window
         self.pos = pos
         self.size = size
@@ -37,6 +37,9 @@ class FieldTool:
         self.selectable = selectable
         self.GroupIndex = GroupIndex
         self.visible = visible
+        self.wrap = wrap
+        if(wrap):
+            self.textLines = self.textWrap(text)
     
     def centerText(self):
         text_surface = self.font.render(self.text, True, self.fontColor)
@@ -58,11 +61,33 @@ class FieldTool:
                              min(self.color[2]+30,255))
 
         pg.draw.rect(self.W,self.ACTcolor,(self.pos[0],self.pos[1],self.size[0],self.size[1]),border_radius=20)
-        nameText = self.font.render(self.text,True,self.fontColor)
-        self.W.blit(nameText,self.textPos)
+        if(self.wrap):
+            tpos=1
+            for t in self.textLines:
+                Text = self.font.render(t,True,self.fontColor)
+                self.W.blit(Text,(self.pos[0]+10,self.pos[1]+10+tpos*30))
+                tpos+=1
+        else:
+            nameText = self.font.render(self.text,True,self.fontColor)
+            self.W.blit(nameText,self.textPos)
 
     def isClicked(self,x,y):
         return -1
+
+    def textWrap(self,text):
+        if(text == ""):
+            return []
+        lines = []
+        line = ""
+        for c in text:
+            line += c
+            if(self.font.size(line)[0] > self.size[1]):
+                ch = line[-1]
+                line = line[:-1]
+                lines.append(line)
+                line = ""+ch
+        lines.append(line)
+        return lines
 
 #class Dialog
 class Dialog(FieldTool):
@@ -177,19 +202,21 @@ class BTN(FieldTool):
         
 #class TextField():
 class TXTField(FieldTool):
-    def __init__(self,window,pos,size,font,color=Black,fontColor=(255,255,255),AC="ABCDEFGHIJKLMNOPQRSTUVWXYZ ",canWrite=True,GroupIndex="",visible=True):
+    def __init__(self,window,pos,size,font,color=Black,fontColor=(255,255,255),AC="ABCDEFGHIJKLMNOPQRSTUVWXYZ ",canWrite=True,GroupIndex="",visible=True,wrap=False):
         text_surface = font.render(" ", True, fontColor)
-        super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,pos[1]+(size[1]-font.get_height())//2),True,GroupIndex=GroupIndex,visible=visible)
+        super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,pos[1]+(size[1]-font.get_height())//2),True,GroupIndex=GroupIndex,visible=visible,wrap=wrap)
         self.selected = False
         self.action = (1,2)
         self.allowedChars = AC
         self.canWrite = canWrite
+        self.textLines = []
 
     def getResult(self):
         return self.text
 
     def clean(self):
         self.text = ""
+        self.textLines = []
 
     def isEmpty(self):
         empty = True
@@ -225,9 +252,14 @@ class TXTField(FieldTool):
             textSpace = self.font.render(self.text,True,self.fontColor)
             if(key.upper() in self.allowedChars and textSpace.get_width()<self.size[0]-20):
                 self.text += key
+            
+            if(self.wrap):
+                self.textLines = super().textWrap(self.text)
 
     def setPath(self,path):
         self.text = path
+        if(self.wrap):
+            self.textLines = super().textWrap(path)
 
 #class comboBox
 class ComboBox(FieldTool):
