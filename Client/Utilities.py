@@ -583,8 +583,8 @@ class DMUserBanner(FieldTool):
 
 #class GroupOfItems
 class GroupOfItems(FieldTool):
-    def __init__(self,window,pos,posSelected,size,sizeSelected,font,imagePath,color=Black,fontColor=(255,255,255),showed=False):
-        super().__init__(window,pos,(110,110),font,color,fontColor,pos)
+    def __init__(self,window,text,textPos,pos,posSelected,size,sizeSelected,font,imagePath,color=Black,fontColor=(255,255,255),showed=False):
+        super().__init__(window,pos,(110,110),font,color,fontColor,textPos,text=text)
         self.sizeSelected = sizeSelected
         self.posSelected = posSelected
         self.path = imagePath
@@ -601,11 +601,9 @@ class GroupOfItems(FieldTool):
         return self.path
 
     def OnGroup(self):
-        return (self.showed or getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)) or \
-           (self.showing and (getCollision(self.posSelected[0],self.posSelected[1],self.sizeSelected[0],self.sizeSelected[1],0,0,True)))
+        return self.showing
 
     def render(self):
-        self.imagePos = (self.pos[0]+10,self.pos[1]+10)
         if (self.showed or getCollision(self.pos[0],self.pos[1],self.size[0],self.size[1],0,0,True)) or \
            (self.showing and (getCollision(self.posSelected[0],self.posSelected[1],self.sizeSelected[0],self.sizeSelected[1],0,0,True))):
             pg.draw.rect(self.W,self.color,(self.posSelected[0],self.posSelected[1],self.sizeSelected[0],self.sizeSelected[1]),border_radius=20)
@@ -613,6 +611,16 @@ class GroupOfItems(FieldTool):
             self.showing = True
         else:
             self.showing = False
+
+        Text = self.font.render(self.text,True,self.fontColor)
+        self.W.blit(Text,(self.textPos[0],self.textPos[1]))
+
+        pg.draw.rect(self.W,self.color,(self.pos[0],self.pos[1],self.size[0],self.size[1]),border_radius=20)
+        self.W.blit(self.image,self.imagePos)
+        
+    def renderNecesary(self):
+        Text = self.font.render(self.text,True,self.fontColor)
+        self.W.blit(Text,self.textPos)
 
         pg.draw.rect(self.W,self.color,(self.pos[0],self.pos[1],self.size[0],self.size[1]),border_radius=20)
         self.W.blit(self.image,self.imagePos)

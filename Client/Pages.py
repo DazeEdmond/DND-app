@@ -257,6 +257,10 @@ class Interface:
         self.msgFieldSelected = False
         self.Turn = False
         self.mode = ""
+        self.GroupFocus = False
+        self.GroupSelected = ""
+        self.TextDialogs = []
+        self.TextDialogIndex = -1
 
     def setDMUI(self,flag):
         self.DMUI = flag
@@ -290,6 +294,8 @@ class Interface:
         self.msgFieldSelected = False
         self.Turn = False
         self.mode = ""
+        self.GroupFocus = False
+        self.GroupSelected = ""
         self.startGame()
         self.stopMusic()
 
@@ -331,47 +337,49 @@ class Interface:
         self.screenItems.clear()
         self.GroupItems.clear()
 
-        self.GroupItems.append(GroupOfItems(self.W,(170,470),(280,10),(120,120),(600,700),self.font,"Images\\sampleUser.png",color=Gray))#Group 0
+        self.GroupItems.append(GroupOfItems(self.W,"Battle",(180,425),(170,470),(280,10),(120,120),(800,700),self.font,"Images\\sampleUser.png",color=Gray))#Group 0
+        self.GroupItems.append(GroupOfItems(self.W,"OST",(345,425),(320,470),(430,10),(120,120),(790,700),self.font,"Images\\sampleUser.png",color=Gray))#Group 1
 
-        self.screenItems.append(TXTField(self.W,(170,320),(600,50),self.font,White,Black))
+        self.screenItems.append(TXTField(self.W,(170,320),(600,50),self.font,White,Black))#item 0
         self.selectedTXTField = self.screenItems[0]
-        self.screenItems.append(ComboBox(self.W,(170,380),(200,50),self.font,White,Black))
+        self.screenItems.append(ComboBox(self.W,(170,380),(200,50),self.font,White,Black))#item 1
         self.screenItems[1].setItems(["ALL"])
         self.screenItems.append(Image(self.W,(300,30),(120,120),self.font,"Images\\sampleUser.png",GroupIndex=0,visible=False))#item 2
         self.screenItems.append(FileDialog(self.W,(300,160),(120,45),self.font,"Find a picture :p",
                                            (("PNG","*.png"),("JPG","*.jpg"),("All Files","*.*")),"Profile",
                                            self.screenItems[-1],(224,224,35),GroupIndex=0,visible=False))#item3
-        self.screenItems.append(TXTField(self.W,(535,30),(200,45),self.font,White,Black,GroupIndex=0,visible=False))#item 4
-        self.screenItems.append(TXTField(self.W,(535,75),(200,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 5
-        self.screenItems.append(TXTField(self.W,(535,120),(200,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 6
-        self.screenItems.append(TXTField(self.W,(535,165),(200,45),self.font,White,Black,canWrite=False,GroupIndex=0,visible=False))#item 7
-        self.screenItems.append(FileDialog(self.W,(535,210),(115,45),self.font,"Find a theme",
+        self.screenItems.append(TXTField(self.W,(535,25),(200,45),self.font,White,Black,GroupIndex=0,visible=False))#item 4
+        self.screenItems.append(TXTField(self.W,(535,70),(200,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 5
+        self.screenItems.append(TXTField(self.W,(535,115),(200,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 6
+        self.screenItems.append(TXTField(self.W,(535,160),(200,45),self.font,White,Black,canWrite=False,GroupIndex=0,visible=False))#item 7
+        self.screenItems.append(FileDialog(self.W,(420,160),(115,45),self.font,"Find a theme",
                                            (("All","*.*"),("mp3","*.mp3")),"Theme",
                                            self.screenItems[-1],(224,224,35),GroupIndex=0,visible=False))#item 8
-        self.screenItems.append(BTN(self.W,(615,465),(155,55),self.font,31,"Send",Green))#item 9
-        self.screenItems.append(BTN(self.W,(615,527),(155,55),self.font,32,"Stop",Red))#item 10
-        self.screenItems.append(BTN(self.W,(615,589),(155,55),self.font,33,"Clear",LightGray))#item 11
+        self.screenItems.append(BTN(self.W,(755,645),(90,55),self.font,31,"Send",Green,GroupIndex=0,visible=False))#item 9
+        self.screenItems.append(BTN(self.W,(660,645),(90,55),self.font,32,"Stop",Red,GroupIndex=0,visible=False))#item 10
+        self.screenItems.append(BTN(self.W,(565,645),(90,55),self.font,33,"Clear",LightGray,GroupIndex=0,visible=False))#item 11
+        self.screenItems.append(BTN(self.W,(470,645),(90,55),self.font,39,"Save",Yellow,GroupIndex=0,visible=False))#item 12
 
-        self.screenItems.append(TXTField(self.W,(970,420),(300,45),self.font,White,Black,canWrite=False))#item 12
-        self.screenItems.append(FileDialog(self.W,(870,420),(95,45),self.font,"Find Music",
+        self.screenItems.append(TXTField(self.W,(540,20),(280,45),self.font,White,Black,canWrite=False,GroupIndex=1,visible=False))#item 13
+        self.screenItems.append(FileDialog(self.W,(440,20),(95,45),self.font,"Find Music",
                                            (("All","*.*"),("mp3","*.mp3")),"Music",
-                                           self.screenItems[-1],(224,224,35)))#item 13
-        self.screenItems.append(BTN(self.W,(870,475),(400,40),self.font,41,"Play",Green))#item 14
-        self.screenItems.append(BTN(self.W,(870,520),(400,40),self.font,42,"Stop",Red))#item 15
-        self.screenItems.append(TXTField(self.W,(970,570),(300,45),self.font,White,Black,canWrite=False))#item 16
-        self.screenItems.append(FileDialog(self.W,(870,570),(95,45),self.font,"Find Sound",
+                                           self.screenItems[-1],(224,224,35),GroupIndex=1,visible=False))#item 14
+        self.screenItems.append(BTN(self.W,(440,75),(380,40),self.font,41,"Play",Green,GroupIndex=1,visible=False))#item 15
+        self.screenItems.append(BTN(self.W,(440,120),(380,40),self.font,42,"Stop",Red,GroupIndex=1,visible=False))#item 16
+        self.screenItems.append(TXTField(self.W,(930,20),(280,45),self.font,White,Black,canWrite=False,GroupIndex=1,visible=False))#item 17
+        self.screenItems.append(FileDialog(self.W,(830,20),(95,45),self.font,"Find Sound",
                                            (("All","*.*"),("mp3","*.mp3")),"Sound",
-                                           self.screenItems[-1],(224,224,35)))#item 17
-        self.screenItems.append(BTN(self.W,(870,625),(400,40),self.font,43,"Play",Green))#item 18
-        self.screenItems.append(BTN(self.W,(870,670),(400,40),self.font,44,"Clear",LightGray))#item 19
-        self.screenItems.append(TXTField(self.W,(775,55),(90,45),self.font,White,Black,AC="1234567890"))#item 20
-        self.screenItems.append(BTN(self.W,(775,105),(90,40),self.font,34,"DMG",Green))#item 21
-        self.screenItems.append(TXTField(self.W,(775,180),(90,45),self.font,White,Black,AC="1234567890"))#item 22
-        self.screenItems.append(BTN(self.W,(775,230),(90,40),self.font,35,"Heal",Green))#item 23
-        self.screenItems.append(BTN(self.W,(315,380),(100,50),self.font,36,"Attack",Red))#item 24
-        self.screenItems.append(BTN(self.W,(170,650),(250,50),self.font,37,"Send enemy Files",Yellow))#item 24
-        self.screenItems.append(BTN(self.W,(430,650),(250,50),self.font,38,"Send sound Files",Yellow))#item 24
-        
+                                           self.screenItems[-1],(224,224,35),GroupIndex=1,visible=False))#item 18
+        self.screenItems.append(BTN(self.W,(830,75),(380,40),self.font,43,"Play",Green,GroupIndex=1,visible=False))#item 19
+        self.screenItems.append(BTN(self.W,(830,120),(380,40),self.font,44,"Clear",LightGray,GroupIndex=1,visible=False))#item 20
+        self.screenItems.append(TXTField(self.W,(755,55),(90,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 21
+        self.screenItems.append(BTN(self.W,(755,105),(90,40),self.font,34,"DMG",Green,GroupIndex=0,visible=False))#item 22
+        self.screenItems.append(TXTField(self.W,(755,180),(90,45),self.font,White,Black,AC="1234567890",GroupIndex=0,visible=False))#item 23
+        self.screenItems.append(BTN(self.W,(755,230),(90,40),self.font,35,"Heal",Green,GroupIndex=0,visible=False))#item 24
+        self.screenItems.append(BTN(self.W,(315,380),(100,50),self.font,36,"Attack",Red))#item 25
+        self.screenItems.append(BTN(self.W,(170,650),(250,50),self.font,37,"Send enemy Files",Yellow))#item 26
+        self.screenItems.append(BTN(self.W,(430,650),(250,50),self.font,38,"Send sound Files",Yellow))#item 27
+
     def write(self,key):
         self.selectedTXTField.write(key)
 
@@ -569,7 +577,6 @@ class Interface:
             for i in self.banners:
                 i.updateUser()
 
-
     def playSound(self,sound):
         try:
             Sound = pg.mixer.Sound(sound)
@@ -640,6 +647,8 @@ class Interface:
         return flag
         
     def appendMSG(self,msg):
+        if(len(self.msgs)>=20):
+            self.msgs = self.msgs[10:]
         self.msgs.append(msg)
 
     def throwDice(self,message,flag=False):
@@ -689,54 +698,92 @@ class Interface:
         if(self.Enemy != []):
             self.Enemy[0].render()
 
+        if(not self.GroupFocus):
+            for GI in range(len(self.GroupItems)):
+                if(self.GroupItems[GI].OnGroup()):
+                    self.selectedCBox = False
+                    self.GroupFocus = True
+                    self.GroupSelected = GI
+
+        if(self.GroupSelected != "" and not self.GroupItems[self.GroupSelected].OnGroup()):
+            self.GroupFocus = False
+            self.GroupSelected = ""
+
         extraItems = []
         for i in self.screenItems:
-            i.render()
             if(i.getGroup() != ""):
+                i.setVisible(False)
+            i.render()
+            if(i.getGroup() == self.GroupSelected):
+                i.setVisible(True)
                 extraItems.append(i)
 
         self.loadMSGS()
+
+        if(self.GroupSelected != "" and self.GroupItems[self.GroupSelected].OnGroup()):
+            for GI in range(len(self.GroupItems)):
+                if(GI != self.GroupSelected):
+                    self.GroupItems[GI].renderNecesary()
+            self.GroupItems[self.GroupSelected].render()
+        else:
+            for GI in range(len(self.GroupItems)):
+                self.GroupItems[GI].render()
+
+        for i in extraItems:
+            i.render()
 
         if(not self.DMUI):
             if self.diceCooldown > 0:
                 self.diceCooldown -= 1
 
-        else:
-            battleText = self.font.render("Battle",True,(255,255,255))
-            self.W.blit(battleText,(170,430))
-            nameText = self.font.render("Name:",True,(255,255,255))
-            self.W.blit(nameText,(295,460))
-            hpText = self.font.render("HP:",True,(255,255,255))
-            self.W.blit(hpText,(295,505))
-            ATQText = self.font.render("ATQ:",True,(255,255,255))
-            self.W.blit(ATQText,(295,550))
-            DMGText = self.font.render("DMG",True,(255,255,255))
-            self.W.blit(DMGText,(780,10))
-            HealText = self.font.render("Heal",True,(255,255,255))
-            self.W.blit(HealText,(785,140))
-
         if(self.selectedCBox):
             self.selectedCombo.showItems()
 
-        for GI in self.GroupItems:
-            GI.render()
-        for GI in range(len(self.GroupItems)):
-            for i in extraItems:
-                if(i.getGroup() == GI):
-                    i.setVisible(self.GroupItems[GI].OnGroup())
-                    i.render()
+        else:
+            if(self.GroupItems[0].OnGroup()):
+                nameText = self.font.render("Name:",True,(255,255,255))
+                self.W.blit(nameText,(430,10))
+                hpText = self.font.render("HP:",True,(255,255,255))
+                self.W.blit(hpText,(430,60))
+                ATQText = self.font.render("ATQ:",True,(255,255,255))
+                self.W.blit(ATQText,(430,110))
+                DMGText = self.font.render("DMG",True,(255,255,255))
+                self.W.blit(DMGText,(760,10))
+                HealText = self.font.render("Heal",True,(255,255,255))
+                self.W.blit(HealText,(763,137))
 
         self.banner.render((15,15))
         for i in range(0,len(self.banners)):
             self.banners[i].render((15,i*120+135))
 
+        if(self.TextDialogIndex != -1):
+            self.TextDialogs[self.TextDialogIndex].render()
+
     def getClickedOnes(self,x,y):
+
+        if(self.TextDialogIndex != -1):
+            self.TextDialogs = self.TextDialogs.pop()
+            self.TextDialogIndex -= 1
+            if(self.TextDialogIndex != -1):
+                self.TextDialogs[self.TextDialogIndex].playVoiceLine()
+            return -1
+
         action = []
         dice = [4,6,8,10,12,20]
         comboClick = False
         goToInterface = False
+
+        if(self.GroupFocus):
+            extraItems = []
+            for i in self.screenItems:
+                if(i.getGroup() == self.GroupSelected):
+                    extraItems.append(i)
+
+            validClickedItems = extraItems
+        else:
+            validClickedItems = self.screenItems
         
-        for i in self.screenItems:
+        for i in validClickedItems:
             a = i.isClicked(x,y)
             action.append(a)
             if(a!=-1):
