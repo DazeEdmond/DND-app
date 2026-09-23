@@ -384,6 +384,7 @@ class Interface:
 
         #Save enemy File WIP
         self.screenItems.append(BTN(self.W,(470,645),(90,55),self.font,39,"Save",Yellow,GroupIndex=0,visible=False))#item 27
+        self.screenItems.append(TXTField(self.W,(590,80),(670,180),self.font,Black,White,wrap=True,GroupIndex=2,visible=False))#item 22
 
     def write(self,key):
         self.selectedTXTField.write(key)

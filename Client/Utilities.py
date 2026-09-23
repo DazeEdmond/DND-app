@@ -62,7 +62,7 @@ class FieldTool:
 
         pg.draw.rect(self.W,self.ACTcolor,(self.pos[0],self.pos[1],self.size[0],self.size[1]),border_radius=20)
         if(self.wrap):
-            tpos=1
+            tpos=0
             for t in self.textLines:
                 Text = self.font.render(t,True,self.fontColor)
                 self.W.blit(Text,(self.pos[0]+10,self.pos[1]+10+tpos*30))
@@ -81,7 +81,7 @@ class FieldTool:
         line = ""
         for c in text:
             line += c
-            if(self.font.size(line)[0] > self.size[1]):
+            if(self.font.size(line)[0] > self.size[0]-20):
                 ch = line[-1]
                 line = line[:-1]
                 lines.append(line)
@@ -248,13 +248,21 @@ class TXTField(FieldTool):
 
         if key == '°':
             self.text = self.text[:-1]
+            self.textLines = super().textWrap(self.text)
         else:
-            textSpace = self.font.render(self.text,True,self.fontColor)
-            if(key.upper() in self.allowedChars and textSpace.get_width()<self.size[0]-20):
-                self.text += key
-            
+            textSpace = self.font.size(self.text+key)
+            charHeight = self.font.size("Char")
             if(self.wrap):
-                self.textLines = super().textWrap(self.text)
+                self.textLines = super().textWrap(self.text+key)
+            if((key.upper() in self.allowedChars and (self.wrap or textSpace[0]<self.size[0]-20)) and ((charHeight[1]-20)*len(self.textLines)<self.size[1]-10)):
+                self.text += key
+            else:
+                if(self.wrap):
+                    self.textLines.pop()
+                return
+            
+        if(self.wrap):
+            self.textLines = super().textWrap(self.text)
 
     def setPath(self,path):
         self.text = path
