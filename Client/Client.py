@@ -129,6 +129,9 @@ def reciveMessages(interface):
                 if(command[0] == "sndFile"):
                     print("recived File")
                     reciveFile()
+                if(command[0] == "TXTDialog"):
+                    author,text = command[1].split('$')
+                    interface.recvTDialog(author,text)
             else:
                 interface.appendMSG(message)
 
@@ -417,6 +420,8 @@ def main():
                         msg = interface.sendChange()
                     elif action == 62:
                         msg = interface.sendTurn()
+                    elif action == 70:
+                        msg = interface.sendTDialog()
 
                     elif action in dice: #throw a dice
                         num = randint(1,action)

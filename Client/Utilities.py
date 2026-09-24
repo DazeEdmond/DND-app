@@ -202,7 +202,7 @@ class BTN(FieldTool):
         
 #class TextField():
 class TXTField(FieldTool):
-    def __init__(self,window,pos,size,font,color=Black,fontColor=(255,255,255),AC="ABCDEFGHIJKLMNOPQRSTUVWXYZ ",canWrite=True,GroupIndex="",visible=True,wrap=False):
+    def __init__(self,window,pos,size,font,color=Black,fontColor=(255,255,255),AC="ABCDEFGHIJKLMNOPQRSTUVWXYZ .¿!¡?",canWrite=True,GroupIndex="",visible=True,wrap=False):
         text_surface = font.render(" ", True, fontColor)
         super().__init__(window,pos,size,font,color,fontColor,(pos[0]+7,pos[1]+(size[1]-font.get_height())//2),True,GroupIndex=GroupIndex,visible=visible,wrap=wrap)
         self.selected = False
@@ -259,7 +259,6 @@ class TXTField(FieldTool):
             else:
                 if(self.wrap):
                     self.textLines.pop()
-                return
             
         if(self.wrap):
             self.textLines = super().textWrap(self.text)

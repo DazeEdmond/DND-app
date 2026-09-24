@@ -384,7 +384,9 @@ class Interface:
 
         #Save enemy File WIP
         self.screenItems.append(BTN(self.W,(470,645),(90,55),self.font,39,"Save",Yellow,GroupIndex=0,visible=False))#item 27
-        self.screenItems.append(TXTField(self.W,(590,80),(670,180),self.font,Black,White,wrap=True,GroupIndex=2,visible=False))#item 22
+        self.screenItems.append(TXTField(self.W,(590,20),(670,45),self.font,Black,White,GroupIndex=2,visible=False))#item 28
+        self.screenItems.append(TXTField(self.W,(590,80),(670,180),self.font,Black,White,wrap=True,GroupIndex=2,visible=False))#item 29
+        self.screenItems.append(BTN(self.W,(1170,645),(90,55),self.font,70,"Send",Yellow,GroupIndex=2,visible=False))#item 30
 
     def write(self,key):
         self.selectedTXTField.write(key)
@@ -498,6 +500,9 @@ class Interface:
     def sendUserDMG(self):
         return "ALL|DM|usrDMG-"+self.screenItems[1].getResult()+"$"+str(self.Enemy[0].getAtq())
 
+    def sendTDialog(self):
+        return "ALL|DM|TXTDialog-"+self.screenItems[28].getResult()+"$"+self.screenItems[29].getResult()
+
     def chargeUser(self,charge):
         num = 0
         if("_" in charge[1]):
@@ -603,6 +608,13 @@ class Interface:
     def stopMusic(self):
         pg.mixer.music.stop()
 
+    def recvTDialog(self,author,text):
+        self.TextDialogs.reverse()
+        self.TextDialogs.append(TextDialog(self.W,(10,520),(1260,190),self.font,author,text,"Images\\GV1.mp3",self.screenItems))
+        self.TextDialogs.reverse()
+        self.TextDialogIndex = len(self.TextDialogs)-1
+        self.TextDialogs[self.TextDialogIndex].playVoiceLine()
+
     def connectUser(self,u):
         UsersTXTBI = 7
         if(type(self.User) == DM):
@@ -704,16 +716,18 @@ class Interface:
         if(self.Enemy != []):
             self.Enemy[0].render()
 
-        if(not self.GroupFocus):
-            for GI in range(len(self.GroupItems)):
-                if(self.GroupItems[GI].OnGroup()):
-                    self.selectedCBox = False
-                    self.GroupFocus = True
-                    self.GroupSelected = GI
+        groupFlag = len(self.GroupItems) != 0
+        if(groupFlag):
+            if(not self.GroupFocus):
+                for GI in range(len(self.GroupItems)):
+                    if(self.GroupItems[GI].OnGroup()):
+                        self.selectedCBox = False
+                        self.GroupFocus = True
+                        self.GroupSelected = GI
 
-        if(self.GroupSelected != "" and not self.GroupItems[self.GroupSelected].OnGroup()):
-            self.GroupFocus = False
-            self.GroupSelected = ""
+            if(self.GroupSelected != "" and not self.GroupItems[self.GroupSelected].OnGroup()):
+                self.GroupFocus = False
+                self.GroupSelected = ""
 
         extraItems = []
         for i in self.screenItems:
@@ -726,17 +740,18 @@ class Interface:
 
         self.loadMSGS()
 
-        if(self.GroupSelected != "" and self.GroupItems[self.GroupSelected].OnGroup()):
-            for GI in range(len(self.GroupItems)):
-                if(GI != self.GroupSelected):
-                    self.GroupItems[GI].renderNecesary()
-            self.GroupItems[self.GroupSelected].render()
-        else:
-            for GI in range(len(self.GroupItems)):
-                self.GroupItems[GI].render()
+        if(groupFlag):
+            if(self.GroupSelected != "" and self.GroupItems[self.GroupSelected].OnGroup()):
+                for GI in range(len(self.GroupItems)):
+                    if(GI != self.GroupSelected):
+                        self.GroupItems[GI].renderNecesary()
+                self.GroupItems[self.GroupSelected].render()
+            else:
+                for GI in range(len(self.GroupItems)):
+                    self.GroupItems[GI].render()
 
-        for i in extraItems:
-            i.render()
+            for i in extraItems:
+                i.render()
 
         if(not self.DMUI):
             if self.diceCooldown > 0:
@@ -746,7 +761,7 @@ class Interface:
             self.selectedCombo.showItems()
 
         else:
-            if(self.GroupItems[0].OnGroup()):
+            if(self.DMUI and self.GroupItems[0].OnGroup()):
                 nameText = self.font.render("Name:",True,(255,255,255))
                 self.W.blit(nameText,(430,10))
                 hpText = self.font.render("HP:",True,(255,255,255))
@@ -768,7 +783,7 @@ class Interface:
     def getClickedOnes(self,x,y):
 
         if(self.TextDialogIndex != -1):
-            self.TextDialogs = self.TextDialogs.pop()
+            self.TextDialogs.pop()
             self.TextDialogIndex -= 1
             if(self.TextDialogIndex != -1):
                 self.TextDialogs[self.TextDialogIndex].playVoiceLine()
@@ -929,6 +944,12 @@ class Interface:
         
         if 62 in action:
             return 62
+
+        if 70 in action:
+            author = self.screenItems[28].getResult()
+            text = self.screenItems[29].getResult()
+            if author != "" and text != "":
+                return 70
 
         if 1 in action:
             return 1
