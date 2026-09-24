@@ -386,7 +386,9 @@ class Interface:
         self.screenItems.append(BTN(self.W,(470,645),(90,55),self.font,39,"Save",Yellow,GroupIndex=0,visible=False))#item 27
         self.screenItems.append(TXTField(self.W,(590,20),(670,45),self.font,Black,White,GroupIndex=2,visible=False))#item 28
         self.screenItems.append(TXTField(self.W,(590,80),(670,180),self.font,Black,White,wrap=True,GroupIndex=2,visible=False))#item 29
-        self.screenItems.append(BTN(self.W,(1170,645),(90,55),self.font,70,"Send",Yellow,GroupIndex=2,visible=False))#item 30
+        self.screenItems.append(ComboBox(self.W,(590,265),(180,50),self.font,White,Black,GroupIndex=2,visible=False))#item 30
+        self.screenItems[-1].setItems(["BV1.mp3","BV2.mp3","GV1.mp3","GV2.mp3","OldGuy.mp3"])
+        self.screenItems.append(BTN(self.W,(1170,645),(90,55),self.font,70,"Send",Yellow,GroupIndex=2,visible=False))#item 31
 
     def write(self,key):
         self.selectedTXTField.write(key)
@@ -501,7 +503,7 @@ class Interface:
         return "ALL|DM|usrDMG-"+self.screenItems[1].getResult()+"$"+str(self.Enemy[0].getAtq())
 
     def sendTDialog(self):
-        return "ALL|DM|TXTDialog-"+self.screenItems[28].getResult()+"$"+self.screenItems[29].getResult()
+        return "ALL|DM|TXTDialog-"+self.screenItems[28].getResult()+"$"+self.screenItems[29].getResult()+"$"+self.screenItems[30].getResult()
 
     def chargeUser(self,charge):
         num = 0
@@ -588,6 +590,14 @@ class Interface:
             for i in self.banners:
                 i.updateUser()
 
+    def recvTDialog(self,author,text,VL):
+        self.TextDialogs.reverse()
+        self.TextDialogs.append(TextDialog(self.W,(10,520),(1260,190),self.font,author,text,"Images\\"+VL,self.screenItems))
+        self.TextDialogs.reverse()
+        self.TextDialogIndex = len(self.TextDialogs)-1
+        if(self.TextDialogIndex == 0):
+            self.TextDialogs[self.TextDialogIndex].playVoiceLine()
+
     def playSound(self,sound):
         try:
             Sound = pg.mixer.Sound(sound)
@@ -607,13 +617,6 @@ class Interface:
 
     def stopMusic(self):
         pg.mixer.music.stop()
-
-    def recvTDialog(self,author,text):
-        self.TextDialogs.reverse()
-        self.TextDialogs.append(TextDialog(self.W,(10,520),(1260,190),self.font,author,text,"Images\\GV1.mp3",self.screenItems))
-        self.TextDialogs.reverse()
-        self.TextDialogIndex = len(self.TextDialogs)-1
-        self.TextDialogs[self.TextDialogIndex].playVoiceLine()
 
     def connectUser(self,u):
         UsersTXTBI = 7

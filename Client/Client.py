@@ -130,8 +130,8 @@ def reciveMessages(interface):
                     print("recived File")
                     reciveFile()
                 if(command[0] == "TXTDialog"):
-                    author,text = command[1].split('$')
-                    interface.recvTDialog(author,text)
+                    author,text,VL = command[1].split('$')
+                    interface.recvTDialog(author,text,VL)
             else:
                 interface.appendMSG(message)
 
